@@ -1,0 +1,69 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+tests/
+
+# PyBuilder
+.pybuilder/
+target/
+
+__pypackages__/
+
+.env
+.venv
+env/
+venv/
+docs/
+data/
+.coverage
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+.idea/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project Specific Logs & Output
+*.log
+logs/
+test_output.txt
+all_tests.txt
+all_tests2.txt
+fail.txt
+
+# Databases
+*.db
+*.sqlite3
+
+# Node modules (for when we add the dashboard)
+node_modules/
+.npm/
