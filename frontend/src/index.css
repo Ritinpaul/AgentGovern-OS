@@ -1,0 +1,197 @@
+@import "tailwindcss";
+
+@theme {
+  /*
+   * PREMIUM SAAS DESIGN TOKENS
+   * Inspired by Linear / Stripe / Vercel
+   */
+
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Color Palette - Defaulting to Dark Mode as per requirements */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Glass/Gradients Tokens for Micro UI */
+  --color-glass: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+  --color-halo: rgba(255, 255, 255, 0.1);
+
+  /* Custom Radii for softer, less generic corners */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Refined Shadow System */
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 15px -3px var(--color-primary);
+  --shadow-glass: inset 0 1px 1px 0 rgba(255, 255, 255, 0.05), 0 4px 12px 0 rgba(0, 0, 0, 0.2);
+
+  /* Animation Overrides */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@layer base {
+  :root {
+    /* LIGHT THEME (Fallbacks to ensure everything is visible if users toggle) */
+    --background: #fcfcfc;
+    --foreground: #09090b;
+
+    --card: #ffffff;
+    --card-foreground: #09090b;
+
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+
+    --primary: #18181b;
+    --primary-foreground: #fafafa;
+
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+
+    --success: #10b981;
+    --success-foreground: #ffffff;
+
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+
+    --radius: 0.5rem;
+  }
+
+  /* DEFAULT: DARK THEME PREFERENCE (As requested: "primarily for dark mode") */
+  .dark,
+  :root {
+    --background: #090a0c;
+    /* Very deep charcoal/black */
+    --foreground: #ededed;
+    /* Soft white */
+
+    --card: #121316;
+    /* Subtly raised from background */
+    --card-foreground: #ededed;
+
+    --popover: #121316;
+    --popover-foreground: #ededed;
+
+    --primary: #ffffff;
+    --primary-foreground: #090a0c;
+
+    --secondary: #1c1d22;
+    --secondary-foreground: #ededed;
+
+    --muted: #1c1d22;
+    --muted-foreground: #8b8d98;
+
+    --accent: #1c1d22;
+    --accent-foreground: #ffffff;
+
+    --destructive: #ef4444;
+    /* Standard alert red */
+    --destructive-foreground: #ffffff;
+
+    --success: #10b981;
+    /* Standard success green */
+    --success-foreground: #121316;
+
+    --border: #24262d;
+    /* Subtle borders, not harsh */
+    --input: #1c1d22;
+    --ring: rgba(255, 255, 255, 0.2);
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Clean subtle background texture via CSS radial gradient */
+    background-image: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 60%);
+  }
+
+  /* Global Selection formatting */
+  ::selection {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+}
+
+/* Base custom utilities for Premium Glass and micro-interactions */
+@layer utilities {
+  .glass-panel {
+    background-color: var(--color-glass);
+    border: 1px solid var(--color-glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-button {
+    background-color: transparent;
+    border: 1px solid var(--color-glass-border);
+    transition: all 0.2s ease;
+  }
+
+  .glass-button:hover {
+    background-color: var(--color-glass);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .text-gradient {
+    background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Hide scrollbar for standard sleek UI */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+}

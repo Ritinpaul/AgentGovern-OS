@@ -1,0 +1,931 @@
+[
+    {
+        "id": 1,
+        "description": "SAP Finance: Standard Purchase Order (₹25,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0101",
+                "Supplier": "VENDOR-TATA-001",
+                "NetAmount": 25000,
+                "DocumentCurrency": "INR",
+                "CompanyCode": "1000"
+            }
+        }
+    },
+    {
+        "id": 2,
+        "description": "SAP Finance: Small Payment Advice (₹18,500)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/paymentadvice",
+            "type": "sap.s4.beh.paymentAdvice.v1.PaymentAdvice.Posted.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PaymentAdvice": "PA-2025-0201",
+                "Payee": "VENDOR-WIPRO-002",
+                "Amount": 18500,
+                "Currency": "INR"
+            }
+        }
+    },
+    {
+        "id": 3,
+        "description": "SAP Finance: Purchase Order Over Limit (₹8,50,000)",
+        "expectedVerdict": "ESCALATE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0102",
+                "Supplier": "VENDOR-INFOSYS-003",
+                "NetAmount": 850000,
+                "DocumentCurrency": "INR",
+                "CompanyCode": "1000"
+            }
+        }
+    },
+    {
+        "id": 4,
+        "description": "SAP HR: Employee Onboarding — Ravi Shankar (Engineering)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee",
+            "type": "sap.s4.beh.employee.v1.Employee.Onboarded.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "EmployeeId": "EMP-2025-0301",
+                "FirstName": "Ravi",
+                "LastName": "Shankar",
+                "Department": "Engineering",
+                "CostCenter": "CC-ENG-001"
+            }
+        }
+    },
+    {
+        "id": 5,
+        "description": "SAP HR: Employee Termination — Access Revocation",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee",
+            "type": "sap.s4.beh.employee.v1.Employee.Terminated.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "EmployeeId": "EMP-2024-0501",
+                "LastWorkingDate": "2025-03-01",
+                "Reason": "Resignation",
+                "AccessRevoked": true
+            }
+        }
+    },
+    {
+        "id": 6,
+        "description": "SAP Sales: Small Sales Order (₹12,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Sales",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "SalesOrder": "SO-2025-0401",
+                "SoldToParty": "CUSTOMER-WIPRO-007",
+                "TotalNetAmount": 12000,
+                "TransactionCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 7,
+        "description": "SAP Sales: High-Value Order Exceeds Discount Authority (₹95,000)",
+        "expectedVerdict": "ESCALATE",
+        "tag": "SAP S/4HANA Sales",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "SalesOrder": "SO-2025-0402",
+                "SoldToParty": "CUSTOMER-RELIANCE-012",
+                "TotalNetAmount": 95000,
+                "TransactionCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 8,
+        "description": "SAP BTP Workflow: CapEx Approval Process Started",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Workflow",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/workflow/process-integration",
+            "type": "com.sap.btp.workflow.v1.WorkflowInstance.Started.v1",
+            "sap_source_system": "BTP-INTEGRATION-001",
+            "data": {
+                "workflowDefinitionId": "CapEx-Approval-v2",
+                "status": "started",
+                "initiatedBy": "priya.nair@enterprise.com"
+            }
+        }
+    },
+    {
+        "id": 9,
+        "description": "SAP BTP Alert: IoT Temperature Threshold Breach (92.7°C)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Alert / IoT",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/alert-notification/iot-sensor-cluster-a",
+            "type": "com.sap.alert.notification.v1.AlertNotification.Triggered.v1",
+            "sap_source_system": "EDGE-CLUSTER-A",
+            "data": {
+                "alertType": "THRESHOLD_BREACH",
+                "thresholdValue": 92.7,
+                "severity": "HIGH",
+                "resourceName": "EDGE-SENSOR-47"
+            }
+        }
+    },
+    {
+        "id": 10,
+        "description": "SAP Finance: Purchase Order Under ₹50,000 (₹48,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0103",
+                "Supplier": "VENDOR-HCL-005",
+                "NetAmount": 48000,
+                "DocumentCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 11,
+        "description": "SAP HR: Onboarding Senior VP (Executive Access Request)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee",
+            "type": "sap.s4.beh.employee.v1.Employee.Onboarded.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "EmployeeId": "EMP-2025-0302",
+                "FirstName": "Anjali",
+                "LastName": "Mehta",
+                "Department": "C-Suite",
+                "Grade": "SVP"
+            }
+        }
+    },
+    {
+        "id": 12,
+        "description": "SAP Finance: Payment Advice for Vendor Settlement (₹72,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/paymentadvice",
+            "type": "sap.s4.beh.paymentAdvice.v1.PaymentAdvice.Posted.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PaymentAdvice": "PA-2025-0202",
+                "Payee": "VENDOR-TCS-008",
+                "Amount": 72000,
+                "Currency": "INR"
+            }
+        }
+    },
+    {
+        "id": 13,
+        "description": "SAP Sales: Routine Sales Order (₹8,500)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Sales",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "SalesOrder": "SO-2025-0403",
+                "SoldToParty": "CUSTOMER-SME-019",
+                "TotalNetAmount": 8500,
+                "TransactionCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 14,
+        "description": "Stripe: Large Customer Refund — Suspicious (₹4,50,000)",
+        "expectedVerdict": "BLOCK",
+        "tag": "Stripe Payments",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/stripe/webhooks/refund",
+            "type": "stripe.charge.refunded.v1",
+            "sap_source_system": "STRIPE-PROD",
+            "data": {
+                "refund_id": "re_3abc123DEF",
+                "amount": 450000,
+                "currency": "inr",
+                "reason": "fraudulent",
+                "charge_id": "ch_xyz456"
+            }
+        }
+    },
+    {
+        "id": 15,
+        "description": "Stripe: Subscription Cancelled by Customer",
+        "expectedVerdict": "BLOCK",
+        "tag": "Stripe Payments",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/stripe/webhooks/subscription",
+            "type": "stripe.customer.subscription.deleted.v1",
+            "sap_source_system": "STRIPE-PROD",
+            "data": {
+                "subscription_id": "sub_9XyZ123",
+                "customer_id": "cus_ABCD1",
+                "plan": "enterprise_annual",
+                "reason": "cancellation_requested"
+            }
+        }
+    },
+    {
+        "id": 16,
+        "description": "Stripe: Mass Payout to Unknown Bank Account",
+        "expectedVerdict": "BLOCK",
+        "tag": "Stripe Payments",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/stripe/webhooks/payout",
+            "type": "stripe.payout.created.v1",
+            "sap_source_system": "STRIPE-PROD",
+            "data": {
+                "payout_id": "po_QRST9876",
+                "amount": 1250000,
+                "currency": "inr",
+                "destination": "UNKNOWN_BANK_ACC_99",
+                "status": "pending"
+            }
+        }
+    },
+    {
+        "id": 17,
+        "description": "AWS: Spin Up Expensive GPU Instance (p4d.24xlarge) — $32/hr",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudtrail/ec2",
+            "type": "aws.cloudtrail.RunInstances.v1",
+            "sap_source_system": "AWS-PROD-US-EAST-1",
+            "data": {
+                "instanceType": "p4d.24xlarge",
+                "region": "us-east-1",
+                "requestedBy": "iam-user/dev-team-bot",
+                "count": 4,
+                "estimatedHourlyCost": 128.0
+            }
+        }
+    },
+    {
+        "id": 18,
+        "description": "AWS: S3 Bucket Public Access Enabled by Script",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudtrail/s3",
+            "type": "aws.cloudtrail.PutBucketAcl.v1",
+            "sap_source_system": "AWS-PROD-AP-SOUTH-1",
+            "data": {
+                "bucketName": "prod-customer-data-backup",
+                "newAcl": "public-read-write",
+                "requestedBy": "iam-role/ci-deploy-role",
+                "sensitive": true
+            }
+        }
+    },
+    {
+        "id": 19,
+        "description": "AWS: IAM Admin Policy Attached to Unknown User",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudtrail/iam",
+            "type": "aws.cloudtrail.AttachUserPolicy.v1",
+            "sap_source_system": "AWS-PROD-US-EAST-1",
+            "data": {
+                "userName": "temp-contractor-007",
+                "policyArn": "arn:aws:iam::aws:policy/AdministratorAccess",
+                "requestedBy": "iam-user/devops-bot"
+            }
+        }
+    },
+    {
+        "id": 20,
+        "description": "AWS: RDS Production Database Deletion",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudtrail/rds",
+            "type": "aws.cloudtrail.DeleteDBInstance.v1",
+            "sap_source_system": "AWS-PROD-EU-WEST-1",
+            "data": {
+                "dbInstanceIdentifier": "prod-postgres-main",
+                "skipFinalSnapshot": true,
+                "requestedBy": "iam-user/automation-agent-v2"
+            }
+        }
+    },
+    {
+        "id": 21,
+        "description": "GitHub: Force Push to Protected Main Branch",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/push",
+            "type": "github.push.force.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "repository": "org/production-api",
+                "branch": "main",
+                "pusher": "dev-contractor-023",
+                "forced": true,
+                "commits_overwritten": 12
+            }
+        }
+    },
+    {
+        "id": 22,
+        "description": "GitHub: Secret Exposed in Public Repository",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/secret-scanning",
+            "type": "github.secret_scanning_alert.created.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "repository": "org/frontend-app",
+                "secret_type": "aws_access_key_id",
+                "exposure": "public",
+                "resolution": "pending",
+                "severity": "critical"
+            }
+        }
+    },
+    {
+        "id": 23,
+        "description": "GitHub: Third-Party GitHub App Requests All-Repo Write Access",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/installation",
+            "type": "github.installation.created.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "app_name": "UnknownCI-Pro",
+                "scope": "all_repositories",
+                "permissions": [
+                    "contents:write",
+                    "secrets:write",
+                    "admin:org"
+                ],
+                "installed_by": "new-intern-001"
+            }
+        }
+    },
+    {
+        "id": 24,
+        "description": "Salesforce: Mass Lead Record Deletion (2,400 records)",
+        "expectedVerdict": "BLOCK",
+        "tag": "Salesforce CRM",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/salesforce/webhooks/record",
+            "type": "salesforce.lead.bulk_delete.v1",
+            "sap_source_system": "SFDC-PROD-ORG",
+            "data": {
+                "recordCount": 2400,
+                "objectType": "Lead",
+                "triggeredBy": "integration-bot@partner.com",
+                "reason": "data_cleanup",
+                "reversible": false
+            }
+        }
+    },
+    {
+        "id": 25,
+        "description": "Salesforce: Opportunity Data Export to External System (30k rows)",
+        "expectedVerdict": "BLOCK",
+        "tag": "Salesforce CRM",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/salesforce/webhooks/data-export",
+            "type": "salesforce.data.export.v1",
+            "sap_source_system": "SFDC-PROD-ORG",
+            "data": {
+                "exportType": "Opportunity",
+                "rowCount": 30000,
+                "destination": "external-partner-s3-bucket",
+                "triggeredBy": "api-automation-agent",
+                "containsPII": true
+            }
+        }
+    },
+    {
+        "id": 26,
+        "description": "SAP Finance: Emergency Vendor Payment (₹3,00,000 — Unregistered Approver)",
+        "expectedVerdict": "BLOCK",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/emergency-payment",
+            "type": "sap.s4.unauthorized.emergency_payment.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "Amount": 300000,
+                "Currency": "INR",
+                "Reason": "emergency",
+                "ApprovedBy": "UNREGISTERED-BOT-42"
+            }
+        }
+    },
+    {
+        "id": 27,
+        "description": "SAP Legacy: Direct Database Manipulation (Unregistered System)",
+        "expectedVerdict": "BLOCK",
+        "tag": "SAP Legacy",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/r3-legacy/direct-db",
+            "type": "sap.legacy.db.direct_update.v1",
+            "sap_source_system": "R3-LEGACY-001",
+            "data": {
+                "table": "USR02",
+                "operation": "UPDATE",
+                "changedFields": [
+                    "BCODE"
+                ],
+                "triggeredBy": "background-RFC"
+            }
+        }
+    },
+    {
+        "id": 28,
+        "description": "AWS: Lambda Function Deploying from Unverified Source",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudtrail/lambda",
+            "type": "aws.cloudtrail.UpdateFunctionCode.v1",
+            "sap_source_system": "AWS-PROD-AP-SOUTH-1",
+            "data": {
+                "functionName": "prod-payment-processor",
+                "codeSource": "s3://unknown-external-bucket/payload.zip",
+                "requestedBy": "iam-role/unknown-role-xyz"
+            }
+        }
+    },
+    {
+        "id": 29,
+        "description": "SAP Finance: Purchase Order Approved by Routine Agent (₹35,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0104",
+                "Supplier": "VENDOR-MPHASIS-006",
+                "NetAmount": 35000,
+                "DocumentCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 30,
+        "description": "SAP HR: Employee Transfer Between Departments",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee",
+            "type": "sap.s4.beh.employee.v1.Employee.Onboarded.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "EmployeeId": "EMP-2023-1105",
+                "Action": "TRANSFER",
+                "FromDepartment": "Sales",
+                "ToDepartment": "Product",
+                "EffectiveDate": "2025-03-01"
+            }
+        }
+    },
+    {
+        "id": 31,
+        "description": "SAP BTP Workflow: Vendor Contract Auto-Renewal",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Workflow",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/workflow/contracts",
+            "type": "com.sap.btp.workflow.v1.WorkflowInstance.Started.v1",
+            "sap_source_system": "BTP-INTEGRATION-001",
+            "data": {
+                "workflowDefinitionId": "Vendor-AutoRenew-v1",
+                "contractId": "CNTR-2022-TATA-001",
+                "renewalAmount": 80000,
+                "initiatedBy": "contract-bot@enterprise.com"
+            }
+        }
+    },
+    {
+        "id": 32,
+        "description": "SAP Finance: Petty Cash Reimbursement (₹2,200)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/paymentadvice",
+            "type": "sap.s4.beh.paymentAdvice.v1.PaymentAdvice.Posted.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PaymentAdvice": "PA-2025-0203",
+                "Payee": "EMP-2025-0301",
+                "Amount": 2200,
+                "Currency": "INR",
+                "Category": "PettyCash"
+            }
+        }
+    },
+    {
+        "id": 33,
+        "description": "GitHub: New Repository Created with Proper Configuration",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/repository",
+            "type": "github.repository.created.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "repository": "org/shadow-it-tool",
+                "visibility": "private",
+                "createdBy": "external-consultant-099",
+                "contains_secrets": false
+            }
+        }
+    },
+    {
+        "id": 34,
+        "description": "Salesforce: Pipeline Stage Change on $2M Deal by Non-Owner",
+        "expectedVerdict": "BLOCK",
+        "tag": "Salesforce CRM",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/salesforce/webhooks/opportunity",
+            "type": "salesforce.opportunity.stage_changed.v1",
+            "sap_source_system": "SFDC-PROD-ORG",
+            "data": {
+                "opportunityId": "OPP-2025-0099",
+                "dealValue": 2000000,
+                "changedBy": "automation-stg-changer-bot",
+                "oldStage": "Proposal",
+                "newStage": "Closed Won",
+                "ownerMismatch": true
+            }
+        }
+    },
+    {
+        "id": 35,
+        "description": "SAP BTP Alert: Pressure Sensor Normal Reading",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Alert / IoT",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/alert-notification/iot-sensor-cluster-b",
+            "type": "com.sap.alert.notification.v1.AlertNotification.Triggered.v1",
+            "sap_source_system": "EDGE-CLUSTER-B",
+            "data": {
+                "alertType": "STATUS_CHECK",
+                "thresholdValue": 45.2,
+                "severity": "LOW",
+                "resourceName": "PRESSURE-SENSOR-12"
+            }
+        }
+    },
+    {
+        "id": 36,
+        "description": "AWS: Routine CloudWatch Alarm Triggered (High CPU)",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/cloudwatch/alarm",
+            "type": "aws.cloudwatch.alarm.triggered.v1",
+            "sap_source_system": "AWS-PROD-US-EAST-1",
+            "data": {
+                "alarmName": "prod-api-cpu-high",
+                "metric": "CPUUtilization",
+                "value": 97.5,
+                "threshold": 80,
+                "action": "auto-scale-x10"
+            }
+        }
+    },
+    {
+        "id": 37,
+        "description": "SAP Finance: Small PO by Registered Finance Agent (₹5,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0105",
+                "Supplier": "VENDOR-OFFICE-SUPPLIES-007",
+                "NetAmount": 5000,
+                "DocumentCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 38,
+        "description": "Salesforce: Contact Record Merged (Data Dedup)",
+        "expectedVerdict": "BLOCK",
+        "tag": "Salesforce CRM",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/salesforce/webhooks/contact",
+            "type": "salesforce.contact.merged.v1",
+            "sap_source_system": "SFDC-PROD-ORG",
+            "data": {
+                "masterId": "003QRST",
+                "mergedIds": [
+                    "003ABCD",
+                    "003EFGH",
+                    "003IJKL"
+                ],
+                "totalRecordsMerged": 4500,
+                "triggeredBy": "data-cleanup-bot@org.com"
+            }
+        }
+    },
+    {
+        "id": 39,
+        "description": "SAP HR: Mass Salary Band Change (1,200 Employees)",
+        "expectedVerdict": "BLOCK",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/comp",
+            "type": "sap.successfactors.comp.bulk_salary_change.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "affectedCount": 1200,
+                "changePercent": 15,
+                "triggeredBy": "unregistered-comp-bot",
+                "approvedBy": "NONE"
+            }
+        }
+    },
+    {
+        "id": 40,
+        "description": "GitHub: Dependency Bot Auto-Merge PR (Low Risk)",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/pull_request",
+            "type": "github.pull_request.auto_merged.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "repository": "org/core-api",
+                "prNumber": 1242,
+                "mergedBy": "dependabot[bot]",
+                "branch": "main",
+                "reviewsRequired": 2,
+                "reviewsCompleted": 0
+            }
+        }
+    },
+    {
+        "id": 41,
+        "description": "SAP Sales: Enterprise License Deal (₹45,000)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Sales",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "SalesOrder": "SO-2025-0404",
+                "SoldToParty": "CUSTOMER-ENTERPRISE-045",
+                "TotalNetAmount": 45000,
+                "TransactionCurrency": "INR"
+            }
+        }
+    },
+    {
+        "id": 42,
+        "description": "AWS: Scheduled Lambda Cost-Report Run (Whitelisted)",
+        "expectedVerdict": "BLOCK",
+        "tag": "AWS Cloud",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/aws/lambda/scheduled",
+            "type": "aws.cloudtrail.InvokeFunction.v1",
+            "sap_source_system": "AWS-PROD-AP-SOUTH-1",
+            "data": {
+                "functionName": "prod-cost-anomaly-reporter",
+                "invokedBy": "events.amazonaws.com",
+                "schedule": "rate(1 day)",
+                "risk": "none"
+            }
+        }
+    },
+    {
+        "id": 43,
+        "description": "SAP Finance: Vendor Advance Payment (₹90,000 — Within Limit)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/paymentadvice",
+            "type": "sap.s4.beh.paymentAdvice.v1.PaymentAdvice.Posted.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PaymentAdvice": "PA-2025-0204",
+                "Payee": "VENDOR-ADVANCE-TATA-001",
+                "Amount": 90000,
+                "Currency": "INR",
+                "Type": "Advance"
+            }
+        }
+    },
+    {
+        "id": 44,
+        "description": "Stripe: Normal Subscription Renewal Payment",
+        "expectedVerdict": "BLOCK",
+        "tag": "Stripe Payments",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/stripe/webhooks/invoice",
+            "type": "stripe.invoice.payment_succeeded.v1",
+            "sap_source_system": "STRIPE-PROD",
+            "data": {
+                "invoice_id": "in_MNOP7890",
+                "customer_id": "cus_QRST2",
+                "amount": 9900,
+                "currency": "inr",
+                "plan": "pro_monthly"
+            }
+        }
+    },
+    {
+        "id": 45,
+        "description": "SAP HR: Bulk Termination Event — 47 Employees (Layoff)",
+        "expectedVerdict": "BLOCK",
+        "tag": "SAP SuccessFactors HR",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee/bulk",
+            "type": "sap.successfactors.hr.bulk_termination.v1",
+            "sap_source_system": "SF-PROD-001",
+            "data": {
+                "affectedCount": 47,
+                "reason": "Reorg",
+                "initiatedBy": "system-auto-bot",
+                "approvedBy": "NONE",
+                "notificationSent": false
+            }
+        }
+    },
+    {
+        "id": 46,
+        "description": "SAP Finance: Approved Capex PO (₹99,000 - Just Within Limit)",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP S/4HANA Finance",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "sap_source_system": "S4H-PROD-001",
+            "data": {
+                "PurchaseOrder": "PO-2025-0106",
+                "Supplier": "VENDOR-INFRA-009",
+                "NetAmount": 99000,
+                "DocumentCurrency": "INR",
+                "Category": "CAPEX"
+            }
+        }
+    },
+    {
+        "id": 47,
+        "description": "SAP BTP Workflow: Legal Document Signing — Routine",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Workflow",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/workflow/legal",
+            "type": "com.sap.btp.workflow.v1.WorkflowInstance.Started.v1",
+            "sap_source_system": "BTP-INTEGRATION-001",
+            "data": {
+                "workflowDefinitionId": "Legal-DocSign-v1",
+                "documentType": "NDA",
+                "initiatedBy": "legal-bot@enterprise.com",
+                "urgency": "standard"
+            }
+        }
+    },
+    {
+        "id": 48,
+        "description": "GitHub: Unverified External Bot Modifying CI/CD Pipeline",
+        "expectedVerdict": "BLOCK",
+        "tag": "GitHub DevOps",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/github/webhooks/workflow",
+            "type": "github.workflow.modified.v1",
+            "sap_source_system": "GITHUB-ORG-ENTERPRISE",
+            "data": {
+                "repository": "org/core-api",
+                "file": ".github/workflows/deploy.yml",
+                "modifiedBy": "external-automation-xyz",
+                "branchProtected": true
+            }
+        }
+    },
+    {
+        "id": 49,
+        "description": "SAP BTP Alert: Disk Utilisation Warning (78%) — Routine",
+        "expectedVerdict": "APPROVE",
+        "tag": "SAP BTP Alert / IoT",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/alert-notification/disk-monitor",
+            "type": "com.sap.alert.notification.v1.AlertNotification.Triggered.v1",
+            "sap_source_system": "EDGE-CLUSTER-A",
+            "data": {
+                "alertType": "CAPACITY_WARNING",
+                "thresholdValue": 78,
+                "severity": "MEDIUM",
+                "resourceName": "DB-Node-01"
+            }
+        }
+    },
+    {
+        "id": 50,
+        "description": "Salesforce: AI Bot Quietly Changing All Prices by -20%",
+        "expectedVerdict": "BLOCK",
+        "tag": "Salesforce CRM",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/salesforce/webhooks/pricebook",
+            "type": "salesforce.pricebook.bulk_update.v1",
+            "sap_source_system": "SFDC-PROD-ORG",
+            "data": {
+                "changePercent": -20,
+                "productCount": 1840,
+                "triggeredBy": "pricing-ai-agent-v3",
+                "approvedBy": "NONE",
+                "reversible": false
+            }
+        }
+    }
+]

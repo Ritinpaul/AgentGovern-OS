@@ -61,7 +61,7 @@ services:
   postgres:
     image: timescale/timescaledb:latest-pg16
     ports:
-      - "5432:5432"
+      - "35432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
       - ./data/migrations/init.sql:/docker-entrypoint-initdb.d/01-init.sql
@@ -79,7 +79,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "36379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes

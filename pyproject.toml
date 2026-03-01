@@ -77,7 +77,7 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
-addopts = "--cov=services --cov-report=term-missing"
+addopts = "-v"
 
 [build-system]
 requires = ["hatchling"]
