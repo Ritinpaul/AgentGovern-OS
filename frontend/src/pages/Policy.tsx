@@ -53,7 +53,7 @@ export function Policy() {
                         <span className="text-xs text-muted-foreground font-mono">Draft Hash:</span>
                         <span className="text-xs text-white font-mono">0x7f4a...e83a</span>
                     </div>
-                    <button className="flex items-center gap-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(79,70,229,0.5)]">
+                    <button className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(34,197,94,0.4)]">
                         Publish Bundle
                     </button>
                 </div>
@@ -74,7 +74,7 @@ export function Policy() {
                         <input
                             type="text"
                             placeholder="Search rules..."
-                            className="mt-3 w-full bg-black/50 border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-primary text-white placeholder:text-muted-foreground transition-all"
+                            className="mt-3 w-full bg-[#040405]/50 border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500/30 text-white placeholder:text-muted-foreground transition-all"
                         />
                     </CardHeader>
                     <CardContent className="flex-1 overflow-y-auto p-2 no-scrollbar">
@@ -116,7 +116,7 @@ export function Policy() {
 
                 {/* Right Panel: Rule Editor */}
                 {activeRule ? (
-                    <Card className="lg:col-span-7 h-full flex flex-col bg-[#0a0a0c] border border-border/80">
+                    <Card className="lg:col-span-7 h-full flex flex-col bg-[#050508] border border-border/80">
                         <CardHeader className="pb-4 border-b border-border/50 shrink-0">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -147,7 +147,7 @@ export function Policy() {
                                             className={cn(
                                                 "px-4 py-1.5 rounded-md text-sm transition-colors border",
                                                 // Simplified mock since the real DB has applies_to_tiers which dictates env
-                                                "bg-primary/20 text-white border-primary/50"
+                                                "bg-emerald-500/20 text-white border-emerald-500/50"
                                             )}
                                         >
                                             {env.charAt(0).toUpperCase() + env.slice(1)}
@@ -187,7 +187,7 @@ export function Policy() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <Card className="lg:col-span-7 h-full flex flex-col justify-center items-center bg-[#0a0a0c] border border-border/80 text-muted-foreground">
+                    <Card className="lg:col-span-7 h-full flex flex-col justify-center items-center bg-[#050508] border border-border/80 text-muted-foreground">
                         Select a policy to edit
                     </Card>
                 )}

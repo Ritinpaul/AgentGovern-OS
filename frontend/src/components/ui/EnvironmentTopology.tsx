@@ -32,7 +32,7 @@ export function EnvironmentTopology() {
                         <YAxis axisLine={false} tickLine={false} tick={{ fill: "#71717a", fontSize: 12 }} />
                         <Tooltip
                             cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                            contentStyle={{ backgroundColor: "#121316", borderColor: "#24262d", borderRadius: "8px", boxShadow: "0 4px 12px 0 rgba(0,0,0,0.5)" }}
+                            contentStyle={{ backgroundColor: "#0a0b0f", borderColor: "#162016", borderRadius: "8px", boxShadow: "0 4px 12px 0 rgba(0,0,0,0.5)" }}
                             itemStyle={{ color: "#fff" }}
                         />
                         <Bar dataKey="cloud" stackId="a" fill={COLORS.cloud} radius={[0, 0, 4, 4]}>

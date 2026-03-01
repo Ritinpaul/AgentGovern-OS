@@ -17,13 +17,13 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-    { label: "Overview", path: "/", icon: DashboardIcon },
-    { label: "Agent Fleet", path: "/fleet", icon: GroupWorkIcon },
-    { label: "Policy Enforcer", path: "/policy", icon: PolicyIcon },
-    { label: "Audit Ledger", path: "/audit", icon: SecurityIcon },
-    { label: "Trust Topology", path: "/trust", icon: TimelineIcon },
-    { label: "Edge Gateways", path: "/gateways", icon: DevicesOtherIcon },
-    { label: "SAP Demo", path: "/demo", icon: BoltIcon },
+    { label: "Overview", path: "/dashboard", icon: DashboardIcon },
+    { label: "Agent Fleet", path: "/dashboard/fleet", icon: GroupWorkIcon },
+    { label: "Policy Enforcer", path: "/dashboard/policy", icon: PolicyIcon },
+    { label: "Audit Ledger", path: "/dashboard/audit", icon: SecurityIcon },
+    { label: "Trust Topology", path: "/dashboard/trust", icon: TimelineIcon },
+    { label: "Edge Gateways", path: "/dashboard/gateways", icon: DevicesOtherIcon },
+    { label: "SAP Demo", path: "/dashboard/demo", icon: BoltIcon },
 ];
 
 export function Sidebar() {
@@ -46,8 +46,8 @@ export function Sidebar() {
         <motion.aside
             animate={{ width: collapsed ? "72px" : "260px" }}
             transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1.0] }}
-            className="h-screen sticky top-0 flex flex-col border-r border-border bg-[#050505] z-40 overflow-hidden"
-            style={{ boxShadow: "1px 0 10px rgba(0,0,0,0.5)" }}
+            className="h-screen sticky top-0 flex flex-col border-r border-border bg-[#030304] z-40 overflow-hidden"
+            style={{ boxShadow: "1px 0 15px rgba(0,0,0,0.6), 1px 0 30px rgba(16,185,129,0.03)" }}
         >
             {/* Brand Header */}
             <div className="flex h-16 shrink-0 items-center justify-between px-4">
@@ -65,8 +65,8 @@ export function Sidebar() {
                                 <circle cx="14" cy="12" r="2" fill="#050505" />
                                 <defs>
                                     <linearGradient id="logo_gradient" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-                                        <stop stopColor="#ffffff" />
-                                        <stop offset="1" stopColor="#a1a1aa" />
+                                        <stop stopColor="#22c55e" />
+                                        <stop offset="1" stopColor="#15803d" />
                                     </linearGradient>
                                 </defs>
                             </svg>
@@ -103,21 +103,21 @@ export function Sidebar() {
                                 className={cn(
                                     "group relative flex items-center rounded-lg px-2.5 py-2.5 text-sm font-medium transition-all duration-200",
                                     isActive
-                                        ? "bg-white/10 text-white"
-                                        : "text-muted-foreground hover:bg-white/5 hover:text-white"
+                                        ? "bg-emerald-500/10 text-emerald-400"
+                                        : "text-muted-foreground hover:bg-emerald-500/5 hover:text-white"
                                 )}
                             >
                                 {isActive && (
                                     <motion.div
                                         layoutId="active-nav"
-                                        className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-white ml-0.5"
+                                        className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-emerald-400 ml-0.5"
                                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     />
                                 )}
 
                                 <Icon
                                     sx={{ fontSize: 20 }}
-                                    className={cn("shrink-0", collapsed ? "mx-auto" : "mr-3", isActive && "text-white")}
+                                    className={cn("shrink-0", collapsed ? "mx-auto" : "mr-3", isActive && "text-emerald-400")}
                                 />
 
                                 {!collapsed && (
@@ -131,10 +131,10 @@ export function Sidebar() {
 
             {/* Footer Settings */}
             <div className="p-3 border-t border-border mt-auto">
-                <Link to="/settings">
+                <Link to="/dashboard/settings">
                     <div className={cn(
-                        "flex items-center rounded-lg p-2.5 text-sm font-medium text-muted-foreground hover:bg-white/5 hover:text-white transition-all",
-                        location.pathname === "/settings" && "bg-white/10 text-white"
+                        "flex items-center rounded-lg p-2.5 text-sm font-medium text-muted-foreground hover:bg-emerald-500/5 hover:text-white transition-all",
+                        location.pathname === "/dashboard/settings" && "bg-emerald-500/10 text-emerald-400"
                     )}>
                         <SettingsIcon sx={{ fontSize: 20 }} className={collapsed ? "mx-auto" : "mr-3"} />
                         {!collapsed && "Settings"}

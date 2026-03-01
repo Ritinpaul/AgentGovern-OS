@@ -54,7 +54,7 @@ export function RecentAuditLedger() {
                     <CardTitle>Recent Audit Ledger</CardTitle>
                     <p className="text-sm text-muted-foreground">Live decisions synced from Edge Gateways.</p>
                 </div>
-                <button className="text-xs font-medium text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-md transition-colors">
+                <button className="text-xs font-medium text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-md transition-colors">
                     View Master Chain
                 </button>
             </CardHeader>
@@ -91,7 +91,7 @@ export function RecentAuditLedger() {
                                     transition={{ delay: 0.05 * idx, duration: 0.3 }}
                                     className="hover:bg-white/5 transition-colors group cursor-pointer"
                                 >
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-muted-foreground group-hover:text-primary transition-colors">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-muted-foreground group-hover:text-emerald-400 transition-colors">
                                         {log.id}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-medium">

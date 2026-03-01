@@ -17,8 +17,8 @@ export function TopNav() {
     return (
         <header
             className={`sticky top-0 z-30 flex h-16 shrink-0 items-center gap-x-4 px-4 sm:gap-x-6 sm:px-6 lg:px-8 transition-all duration-300 ${scrolled
-                    ? "glass-panel border-b border-border shadow-md"
-                    : "bg-transparent"
+                ? "glass-panel border-b border-border shadow-md"
+                : "bg-transparent"
                 }`}
         >
             <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
@@ -28,7 +28,7 @@ export function TopNav() {
                         <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground group-hover:text-white transition-colors">
                             <SearchIcon sx={{ fontSize: 18 }} />
                         </div>
-                        <button className="flex w-full items-center justify-between rounded-md border border-border bg-[#050505]/50 hover:bg-[#111111] px-3 py-1.5 pl-10 text-sm text-muted-foreground transition-all focus:outline-none focus:ring-1 focus:ring-ring">
+                        <button className="flex w-full items-center justify-between rounded-md border border-border bg-[#030304]/50 hover:bg-[#0a0b0f] px-3 py-1.5 pl-10 text-sm text-muted-foreground transition-all focus:outline-none focus:ring-1 focus:ring-emerald-500/30">
                             <span>Search agents, policies, audits...</span>
                             <kbd className="inline-flex items-center gap-1 rounded border border-border bg-muted/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
                                 <span className="text-xs">⌘</span>K

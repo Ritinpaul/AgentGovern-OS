@@ -28,7 +28,7 @@ export function MetricCard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay, ease: "easeOut" }}
         >
-            <Card className="overflow-hidden group hover:border-primary/30 transition-colors duration-300">
+            <Card className="overflow-hidden group hover:border-emerald-500/30 transition-colors duration-300">
                 <CardContent className="p-5">
                     <div className="flex justify-between items-start">
                         <div className="space-y-2">
@@ -45,8 +45,8 @@ export function MetricCard({
                                 </span>
                             </div>
                         </div>
-                        <div className="p-2 bg-white/5 rounded-lg border border-white/10 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                            <Icon sx={{ fontSize: 20 }} className="text-muted-foreground group-hover:text-primary transition-colors" />
+                        <div className="p-2 bg-emerald-500/5 rounded-lg border border-emerald-500/10 group-hover:bg-emerald-500/10 group-hover:text-emerald-400 transition-colors">
+                            <Icon sx={{ fontSize: 20 }} className="text-muted-foreground group-hover:text-emerald-400 transition-colors" />
                         </div>
                     </div>
 

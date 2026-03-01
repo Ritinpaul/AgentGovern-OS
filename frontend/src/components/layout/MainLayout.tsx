@@ -14,10 +14,11 @@ export function MainLayout() {
                 <TopNav />
 
                 {/* Page Content with subtle scroll fade */}
-                <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-8 no-scrollbar scroll-smooth relative">
+                <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-8 no-scrollbar scroll-smooth relative wave-bg">
 
-                    {/* Subtle background glow effect for premium feel */}
-                    <div className="absolute top-0 left-1/4 w-[40rem] h-[30rem] bg-indigo-500/10 blur-[120px] -z-10 rounded-full pointer-events-none" />
+                    {/* Subtle emerald background glow for EqtyLab feel */}
+                    <div className="absolute top-0 left-1/4 w-[40rem] h-[30rem] bg-emerald-500/[0.07] blur-[120px] -z-10 rounded-full pointer-events-none" />
+                    <div className="absolute bottom-0 right-1/4 w-[30rem] h-[20rem] bg-emerald-600/[0.04] blur-[100px] -z-10 rounded-full pointer-events-none" />
 
                     <AnimatePresence mode="wait">
                         <motion.div

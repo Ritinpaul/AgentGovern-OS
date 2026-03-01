@@ -40,10 +40,10 @@ export function Overview() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="text-xs font-medium bg-white/5 hover:bg-white/10 text-white border border-border px-3 py-1.5 rounded-md transition-colors">
+                    <button className="text-xs font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-md transition-colors">
                         Export Report
                     </button>
-                    <button className="text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 px-3 py-1.5 rounded-md transition-colors">
+                    <button className="text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 px-3 py-1.5 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(34,197,94,0.4)]">
                         Deploy Policy
                     </button>
                 </div>

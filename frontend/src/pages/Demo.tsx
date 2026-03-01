@@ -817,7 +817,7 @@ export function Demo() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab
-                                ? "bg-white text-black"
+                                ? "bg-emerald-500 text-white"
                                 : "text-muted-foreground hover:text-white"
                                 }`}
                         >
@@ -833,7 +833,7 @@ export function Demo() {
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={runDemo}
-                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-sm transition-all hover:bg-white/90 shadow-lg shadow-white/10"
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm transition-all hover:bg-emerald-400 shadow-lg shadow-emerald-500/20"
                         >
                             <PlayArrowIcon sx={{ fontSize: 18 }} />
                             Run Demo
@@ -870,10 +870,10 @@ export function Demo() {
                                 onClick={() => setShowModal(true)}
                                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all relative overflow-hidden"
                                 style={{
-                                    background: "linear-gradient(135deg, rgba(139,92,246,0.15) 0%, rgba(59,130,246,0.15) 100%)",
-                                    borderColor: "rgba(139,92,246,0.4)",
-                                    color: "#c4b5fd",
-                                    boxShadow: "0 0 20px rgba(139,92,246,0.15)",
+                                    background: "linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(16,185,129,0.15) 100%)",
+                                    borderColor: "rgba(34,197,94,0.4)",
+                                    color: "#86efac",
+                                    boxShadow: "0 0 20px rgba(34,197,94,0.15)",
                                 }}
                             >
                                 {/* Shimmer */}
@@ -947,7 +947,7 @@ export function Demo() {
                                 placeholder={'{ "id": 14, "description": "Stripe: Large Customer Refund", "tag": "Stripe Payments", "payload": { "specversion": "1.0", "source": "/stripe/webhooks/refund", "type": "stripe.charge.refunded.v1", "sap_source_system": "STRIPE-PROD", "data": { "amount": 450000 } } }'}
                                 rows={8}
                                 spellCheck={false}
-                                className="w-full bg-transparent font-mono text-xs text-white/70 p-4 resize-none outline-none placeholder:text-white/15 leading-relaxed"
+                                className="mt-3 w-full bg-[#040405]/50 border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500/30 text-white placeholder:text-muted-foreground transition-all"
                             />
                         </div>
 
@@ -957,7 +957,7 @@ export function Demo() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={evaluatePlayground}
                                 disabled={pgLoading || !pgJson.trim()}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white text-black font-semibold text-sm transition-all hover:bg-white/90 shadow-lg shadow-white/10 disabled:opacity-40 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-semibold text-sm transition-all hover:bg-emerald-400 shadow-lg shadow-emerald-500/20 disabled:opacity-40 disabled:cursor-not-allowed"
                             >
                                 {pgLoading ? <LoopIcon sx={{ fontSize: 18 }} className="animate-spin" /> : <SendIcon sx={{ fontSize: 18 }} />}
                                 {pgLoading ? "Evaluating..." : "Evaluate Event"}
@@ -1028,8 +1028,8 @@ export function Demo() {
                                                 onClick={() => setShowModal(true)}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all hover:bg-white/5 opacity-80 hover:opacity-100"
                                                 style={{
-                                                    borderColor: "rgba(139,92,246,0.3)",
-                                                    color: "#c4b5fd",
+                                                    borderColor: "rgba(34,197,94,0.3)",
+                                                    color: "#86efac",
                                                 }}
                                             >
                                                 <AutoAwesomeIcon sx={{ fontSize: 14 }} />
