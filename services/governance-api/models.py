@@ -47,7 +47,7 @@ class Agent(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    genes: Mapped[list["AgentGene"]] = relationship(back_populates="agent", cascade="all, delete-orphan")
+    genes: Mapped[list["AgentGene"]] = relationship(back_populates="agent", cascade="all, delete-orphan", foreign_keys="[AgentGene.agent_id]")
     decisions: Mapped[list["Decision"]] = relationship(back_populates="agent")
     trust_events: Mapped[list["TrustEvent"]] = relationship(back_populates="agent")
     contracts: Mapped[list["SocialContract"]] = relationship(back_populates="agent", cascade="all, delete-orphan")
@@ -108,9 +108,17 @@ class Decision(Base):
     outcome_feedback: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     hash: Mapped[str] = mapped_column(String(64), nullable=False)
     prev_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), primary_key=True, server_default=func.now()
+    )
 
     agent: Mapped["Agent"] = relationship(back_populates="decisions")
+
+    __table_args__ = (
+        Index("idx_decisions_agent", "agent_id"),
+        Index("idx_decisions_type", "decision_type"),
+        Index("idx_decisions_time", "timestamp"),
+    )
 
 
 # ============================================================
@@ -122,16 +130,23 @@ class TrustEvent(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     agent_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False)
     event_type: Mapped[str] = mapped_column(String(30), nullable=False)
-    trigger_decision_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("decisions.id"), nullable=True)
+    # Plain UUID — no FK since decisions is a TimescaleDB hypertable with composite PK
+    trigger_decision_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     delta: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
     previous_score: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
     new_score: Mapped[Decimal] = mapped_column(Numeric(5, 4), nullable=False)
     authority_change: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     metadata_: Mapped[dict] = mapped_column("metadata", JSONB, default=dict)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), primary_key=True, server_default=func.now()
+    )
 
     agent: Mapped["Agent"] = relationship(back_populates="trust_events")
+
+    __table_args__ = (
+        Index("idx_trust_agent", "agent_id"),
+    )
 
 
 # ============================================================
@@ -189,7 +204,8 @@ class EscalationCase(Base):
     __tablename__ = "escalation_cases"
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    decision_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("decisions.id"), nullable=False)
+    # Plain UUID — no FK since decisions is a TimescaleDB hypertable with composite PK
+    decision_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     agent_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("agents.id"), nullable=False)
     escalation_reason: Mapped[str] = mapped_column(String(50), nullable=False)
     priority: Mapped[str] = mapped_column(String(10), default="medium")
@@ -237,4 +253,6 @@ class CacheAnalytics(Base):
     tokens_saved: Mapped[int] = mapped_column(Integer, default=0)
     cost_saved: Mapped[Decimal] = mapped_column(Numeric(10, 4), default=Decimal("0.0"))
     evicted_entries: Mapped[int] = mapped_column(Integer, default=0)
-    timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), primary_key=True, server_default=func.now()
+    )

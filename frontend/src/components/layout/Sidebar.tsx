@@ -52,29 +52,31 @@ export function Sidebar() {
             {/* Brand Header */}
             <div className="flex h-16 shrink-0 items-center justify-between px-4">
                 {!collapsed && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex items-center gap-2"
-                    >
-                        <div className="flex items-center justify-center shrink-0">
-                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="28" height="28" rx="6" fill="url(#logo_gradient)" />
-                                <path d="M14 6L20 9V14C20 18.5 14 22 14 22C14 22 8 18.5 8 14V9L14 6Z" stroke="#050505" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="14" cy="12" r="2" fill="#050505" />
-                                <defs>
-                                    <linearGradient id="logo_gradient" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
-                                        <stop stopColor="#22c55e" />
-                                        <stop offset="1" stopColor="#15803d" />
-                                    </linearGradient>
-                                </defs>
-                            </svg>
-                        </div>
-                        <span className="font-semibold tracking-tight text-white text-md">
-                            AgentGovern OS
-                        </span>
-                    </motion.div>
+                    <Link to="/" className="flex items-center gap-2 cursor-pointer group">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-2 group-hover:opacity-80 transition-opacity"
+                        >
+                            <div className="flex items-center justify-center shrink-0">
+                                <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect width="28" height="28" rx="6" fill="url(#logo_gradient)" />
+                                    <path d="M14 6L20 9V14C20 18.5 14 22 14 22C14 22 8 18.5 8 14V9L14 6Z" stroke="#050505" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="14" cy="12" r="2" fill="#050505" />
+                                    <defs>
+                                        <linearGradient id="logo_gradient" x1="0" y1="0" x2="28" y2="28" gradientUnits="userSpaceOnUse">
+                                            <stop stopColor="#22c55e" />
+                                            <stop offset="1" stopColor="#15803d" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                            <span className="font-semibold tracking-tight text-white text-md">
+                                AgentGovern OS
+                            </span>
+                        </motion.div>
+                    </Link>
                 )}
                 <button
                     onClick={() => setCollapsed(!collapsed)}

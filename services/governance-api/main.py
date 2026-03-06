@@ -57,11 +57,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+from routers import genesis, pulse, sentinel, cache, audit
+
 app.include_router(genesis.router)
 app.include_router(pulse.router)
 app.include_router(sentinel.router)
 app.include_router(cache.router)
+app.include_router(audit.router)
 
 
 @app.get("/", tags=["root"])

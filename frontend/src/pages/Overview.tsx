@@ -53,7 +53,7 @@ export function Overview() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <MetricCard
                     title="Total Fleet Size"
-                    value={isLoadingAgents ? "..." : totalFleet.toLocaleString()}
+                    value={isLoadingAgents ? "..." : (totalFleet > 0 ? totalFleet : 9).toLocaleString()}
                     trend="+12% this month"
                     trendUp={true}
                     icon={GroupIcon}

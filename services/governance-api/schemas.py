@@ -50,6 +50,7 @@ class AgentCreate(BaseModel):
     crewai_role: str
     crewai_backstory: str
     tier: AgentTier = AgentTier.T4
+    authority_limit: Decimal | float = 0.0
     dna_profile: dict = Field(default_factory=dict)
     platform_bindings: list = Field(default_factory=list)
 

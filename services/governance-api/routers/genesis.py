@@ -37,6 +37,7 @@ async def register_agent(agent_in: AgentCreate, db: AsyncSession = Depends(get_d
         crewai_role=agent_in.crewai_role,
         crewai_backstory=agent_in.crewai_backstory,
         tier=agent_in.tier.value,
+        authority_limit=agent_in.authority_limit,
         dna_profile=agent_in.dna_profile,
         platform_bindings=agent_in.platform_bindings,
     )

@@ -12,7 +12,7 @@ import TerminalIcon from "@mui/icons-material/Terminal";
 import PolicyIcon from "@mui/icons-material/Policy";
 
 /* ─── Framer Motion Variants ──────────────── */
-const fadeUp = {
+const fadeUp: any = {
     hidden: { opacity: 0, y: 40 },
     visible: (i: number) => ({
         opacity: 1,
@@ -21,7 +21,7 @@ const fadeUp = {
     }),
 };
 
-const fadeDown = {
+const fadeDown: any = {
     hidden: { opacity: 0, y: -20 },
     visible: {
         opacity: 1,
@@ -30,7 +30,7 @@ const fadeDown = {
     },
 };
 
-const scaleIn = {
+const scaleIn: any = {
     hidden: { opacity: 0, scale: 0.85 },
     visible: {
         opacity: 1,
@@ -39,7 +39,7 @@ const scaleIn = {
     },
 };
 
-const staggerContainer = {
+const staggerContainer: any = {
     hidden: {},
     visible: { transition: { staggerChildren: 0.1, delayChildren: 0.3 } },
 };
@@ -278,19 +278,8 @@ export const LandingPage = () => {
                         ))}
                     </div>
 
-                    {/* Right buttons */}
+                    {/* Right buttons - Removed */}
                     <div className="flex items-center gap-3">
-                        <button className="text-sm text-white/70 hover:text-white transition-colors px-4 py-2 rounded-lg border border-white/10 hover:border-white/20 bg-white/[0.02]">
-                            Log In
-                        </button>
-                        <motion.button
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
-                            onClick={() => navigate("/dashboard")}
-                            className="text-sm font-semibold text-white px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 transition-colors shadow-[0_0_20px_-4px_rgba(34,197,94,0.4)]"
-                        >
-                            Get Started
-                        </motion.button>
                     </div>
                 </div>
             </motion.nav>
