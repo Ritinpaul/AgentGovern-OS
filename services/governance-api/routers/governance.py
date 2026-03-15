@@ -288,9 +288,34 @@ async def evaluate(
                 "created_at": datetime.now(timezone.utc).isoformat(),
             },
         )
+        
+        # ── Phase 7 Addendum: Create Escalation Case if verdict is ESCALATED ──
+        if verdict.verdict == "ESCALATED" and agent:
+            await db.execute(
+                text("""
+                    INSERT INTO escalation_cases (
+                        id, decision_id, agent_id, escalation_reason, priority,
+                        status, context_package, created_at
+                    ) VALUES (
+                        :id, :decision_id, :agent_id, :reason, :priority,
+                        :status, :context, :created_at
+                    )
+                """),
+                {
+                    "id": str(uuid.uuid4()),
+                    "decision_id": verdict.audit_id,
+                    "agent_id": agent.id if hasattr(agent, "id") else agent["id"],
+                    "reason": verdict.reason,
+                    "priority": "high" if verdict.risk_score == "HIGH" else "medium",
+                    "status": "pending",
+                    "context": envelope.context,
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+
         await db.commit()
-    except Exception:
-        # Non-fatal: verdict still returned even if audit write fails
+    except Exception as e:
+        # DB error
         try:
             await db.rollback()
         except Exception:

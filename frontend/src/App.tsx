@@ -4,6 +4,7 @@ import { MainLayout } from "./components/layout/MainLayout";
 import { LandingPage } from "./pages/LandingPage";
 import { Overview } from "./pages/Overview";
 import { Policy } from "./pages/Policy";
+import { Approvals } from "./pages/Approvals";
 import { Settings } from "./pages/Settings";
 import { Demo } from "./pages/Demo";
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="/dashboard" element={<MainLayout />}>
             <Route index element={<Overview />} />
             <Route path="fleet" element={<Placeholder title="Agent Fleet Command Center" />} />
+            <Route path="approvals" element={<Approvals />} />
             <Route path="policy" element={<Policy />} />
             <Route path="audit" element={<Placeholder title="Federated Audit Ledger" />} />
             <Route path="trust" element={<Placeholder title="Trust Topology Graph" />} />

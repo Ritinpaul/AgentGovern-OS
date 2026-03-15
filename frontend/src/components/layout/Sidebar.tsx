@@ -13,12 +13,14 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import MenuIcon from "@mui/icons-material/Menu";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import BoltIcon from "@mui/icons-material/Bolt";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
     { label: "Overview", path: "/dashboard", icon: DashboardIcon },
     { label: "Agent Fleet", path: "/dashboard/fleet", icon: GroupWorkIcon },
+    { label: "Approvals", path: "/dashboard/approvals", icon: FactCheckIcon },
     { label: "Policy Enforcer", path: "/dashboard/policy", icon: PolicyIcon },
     { label: "Audit Ledger", path: "/dashboard/audit", icon: SecurityIcon },
     { label: "Trust Topology", path: "/dashboard/trust", icon: TimelineIcon },

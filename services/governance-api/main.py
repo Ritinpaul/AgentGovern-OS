@@ -57,7 +57,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from routers import genesis, pulse, sentinel, cache, audit
+from routers import genesis, pulse, sentinel, cache, audit, eclipse
 from routers import governance  # Phase 2: Universal Connector Endpoint
 
 app.include_router(genesis.router)
@@ -65,6 +65,7 @@ app.include_router(pulse.router)
 app.include_router(sentinel.router)
 app.include_router(cache.router)
 app.include_router(audit.router)
+app.include_router(eclipse.router)
 app.include_router(governance.router)  # Phase 2: POST /governance/evaluate
 
 
