@@ -97,9 +97,10 @@ def _should_skip(path: Path) -> bool:
 
 def _redact(text: str) -> str:
     """Redact a secret value for safe display."""
-    if len(text) <= 8:
+    s = str(text)
+    if len(s) <= 8:
         return "***"
-    return text[:4] + "..." + text[-4:] + " [REDACTED]"
+    return s[:4] + "..." + s[-4:] + " [REDACTED]"
 
 
 def _check_secrets(content: str, path: Path) -> list[SecretDetection]:
@@ -149,14 +150,14 @@ def _scan_python_ast(path: Path) -> tuple[list[CodeprintDetection], list[str]]:
             if class_name and class_name in PYTHON_AGENT_CLASSES:
                 framework = PYTHON_AGENT_CLASSES[class_name]
                 line_no = node.lineno
-                snippet = lines[line_no - 1].strip() if line_no <= len(lines) else ""
+                raw_snippet: str = lines[line_no - 1].strip() if line_no <= len(lines) else ""
                 detections.append(CodeprintDetection(
                     framework=framework,
                     class_name=class_name,
                     file=str(path),
                     line=line_no,
                     confidence="high",
-                    context=snippet[:120],
+                    context=raw_snippet[:120],
                 ))
 
     return detections, errors

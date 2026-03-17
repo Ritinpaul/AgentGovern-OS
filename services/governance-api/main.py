@@ -59,6 +59,7 @@ app.add_middleware(
 
 from routers import genesis, pulse, sentinel, cache, audit, eclipse
 from routers import governance  # Phase 2: Universal Connector Endpoint
+from routers import contract    # Phase 4: Social Contracts
 
 app.include_router(genesis.router)
 app.include_router(pulse.router)
@@ -67,6 +68,7 @@ app.include_router(cache.router)
 app.include_router(audit.router)
 app.include_router(eclipse.router)
 app.include_router(governance.router)  # Phase 2: POST /governance/evaluate
+app.include_router(contract.router)    # Phase 4: POST /contracts/
 
 
 @app.get("/", tags=["root"])

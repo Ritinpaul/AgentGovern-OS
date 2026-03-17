@@ -15,9 +15,7 @@ import re
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
-
-import yaml  # for Pipfile
+from typing import Any, Callable
 
 # ── Known framework signatures ─────────────────────────────────────────────
 
@@ -224,7 +222,7 @@ def scan_dependencies(root: Path) -> DependencyScanResult:
     result = DependencyScanResult()
     seen: set[str] = set()  # deduplicate detections
 
-    _scanners = [
+    _scanners: list[tuple[str, Callable[[Path], tuple[list[DetectedDependency], list[str]]]]] = [
         ("requirements*.txt", _scan_requirements_txt),
         ("pyproject.toml", _scan_pyproject_toml),
         ("package.json", _scan_package_json),
