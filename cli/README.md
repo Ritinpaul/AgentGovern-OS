@@ -33,6 +33,19 @@ Scan and enforce strict enterprise policies (fails CI if violated):
 agentgovern scan . --policy-bundle enterprise --fail-on high
 ```
 
+Generate an HTML report:
+
+```bash
+agentgovern scan . --format html --output report.html
+```
+
+Continuous scanning with watch mode:
+
+```bash
+agentgovern scan . --watch --format html --output report.html
+```
+*(Install watch mode dependencies: `pip install agentgovern[watch]`)*
+
 ## Features
 
 1. **Manifest Parsing**: Reads `agentgovern.yaml` files defining agent tiers, authority limits (spend limits), and allowed actions.
@@ -41,6 +54,8 @@ agentgovern scan . --policy-bundle enterprise --fail-on high
 4. **Policy Engine**: Checks your fleet against bundled policies (`default`, `enterprise`, `eu_ai_act`).
 5. **ABOM Generation**: Emits a standard Agent Bill of Materials (JSON).
 6. **SARIF Export**: Natively integrates with GitHub Code Scanning.
+7. **HTML Reports**: Generate beautiful, shareable HTML reports with executive summaries.
+8. **Watch Mode**: Continuous scanning with automatic re-scan on file changes.
 
 ## Commands
 

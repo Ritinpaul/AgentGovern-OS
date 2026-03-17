@@ -59,6 +59,7 @@ class OutputFormat(str, Enum):
     table = "table"
     json = "json"
     sarif = "sarif"
+    html = "html"
 
 
 class FailOn(str, Enum):
@@ -67,6 +68,177 @@ class FailOn(str, Enum):
     medium = "medium"
     high = "high"
     critical = "critical"
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# WATCH MODE HELPER
+# ════════════════════════════════════════════════════════════════════════════
+
+def _run_watch_mode(
+    path: Path,
+    output: Optional[Path],
+    format: OutputFormat,
+    policy_bundle: str,
+    fail_on: FailOn,
+    ci: bool,
+    server: Optional[str],
+    offline: bool,
+    no_codeprint: bool,
+    watch_interval: int,
+) -> None:
+    """
+    Run continuous scan mode with file watching.
+
+    Monitors the project directory for changes and automatically re-runs scans.
+    """
+    try:
+        from watchdog.observers import Observer
+        from watchdog.events import FileSystemEventHandler
+    except ImportError:
+        console.print(
+            "[red]Error:[/red] Watch mode requires the 'watchdog' package.\n"
+            "[dim]Install it with:[/dim] pip install watchdog"
+        )
+        raise typer.Exit(1)
+
+    console.print(Panel(
+        f"[bold green]🔄 Watch Mode Enabled[/bold green]\n"
+        f"[dim]Monitoring:[/dim] {path}\n"
+        f"[dim]Interval:[/dim] {watch_interval}s\n"
+        f"[dim]Press Ctrl+C to stop[/dim]",
+        border_style="green",
+    ))
+
+    last_scan_time = 0.0
+    scan_counter = 0
+
+    def run_single_scan():
+        """Execute a single scan iteration."""
+        nonlocal scan_counter
+        scan_counter += 1
+
+        if not ci:
+            console.print(f"\n[dim]{'─' * 60}[/dim]")
+            console.print(f"[bold cyan]Scan #{scan_counter}[/bold cyan] — {time.strftime('%H:%M:%S')}")
+            console.print(f"[dim]{'─' * 60}[/dim]\n")
+
+        # Re-import to pick up any code changes
+        from agentgovern.scanner.manifest import discover_manifests, parse_manifest
+        from agentgovern.scanner.dependency import scan_dependencies
+        from agentgovern.scanner.codeprint import scan_codeprint, CodeprintScanResult
+        from agentgovern.scanner.authority import analyse_authority
+        from agentgovern.policy.engine import run_policy_checks
+        from agentgovern.report.abom import build_abom, save_abom
+        from agentgovern.report import terminal as term
+
+        root = path.resolve()
+        t_start = time.monotonic()
+
+        # Run scan phases
+        try:
+            manifest_paths = discover_manifests(root)
+            manifest_results = [parse_manifest(p) for p in manifest_paths]
+            dep_result = scan_dependencies(root)
+
+            if no_codeprint:
+                codeprint_result = CodeprintScanResult()
+            else:
+                codeprint_result = scan_codeprint(root)
+
+            all_agents = [a for mr in manifest_results for a in mr.agents]
+            authority_result = analyse_authority(all_agents)
+            policy_result = run_policy_checks(all_agents, codeprint_result, policy_bundle)
+
+            project_name = manifest_results[0].project if manifest_results else root.name
+            abom = build_abom(
+                project=project_name,
+                manifest_results=manifest_results,
+                dependency_result=dep_result,
+                codeprint_result=codeprint_result,
+                authority_result=authority_result,
+                policy_result=policy_result,
+                scan_duration_s=time.monotonic() - t_start,
+            )
+
+            # Output results based on format
+            if format == OutputFormat.json:
+                if output:
+                    save_abom(abom, output)
+                    if not ci:
+                        console.print(f"[green]✓[/green] ABOM updated in [bold]{output}[/bold]")
+                else:
+                    print(json.dumps(abom, indent=2, default=str))
+
+            elif format == OutputFormat.sarif:
+                from agentgovern.report.sarif import build_sarif, save_sarif
+                sarif = build_sarif(policy_result, codeprint_result)
+                if output:
+                    save_sarif(sarif, output)
+                    if not ci:
+                        console.print(f"[green]✓[/green] SARIF updated in [bold]{output}[/bold]")
+                else:
+                    print(json.dumps(sarif, indent=2))
+
+            elif format == OutputFormat.html:
+                from agentgovern.report.html import build_html_report, save_html_report
+                html = build_html_report(abom, policy_result, codeprint_result)
+                if output:
+                    save_html_report(html, output)
+                    if not ci:
+                        console.print(f"[green]✓[/green] HTML report updated in [bold]{output}[/bold]")
+                else:
+                    print(html)
+
+            else:  # table format
+                if not ci:
+                    term.print_scan_summary(project_name, manifest_results, dep_result, codeprint_result)
+                    term.print_agents_table(all_agents, authority_result.risk_scores)
+                    term.print_violations_table(policy_result)
+                    term.print_secrets_warning(codeprint_result)
+                    term.print_final_result(abom, fail_on.value)
+
+            if not ci:
+                console.print(f"\n[dim]✓ Scan completed in {time.monotonic() - t_start:.2f}s[/dim]")
+                console.print(f"[dim]Waiting for changes...[/dim]")
+
+        except Exception as e:
+            console.print(f"[red]Scan error:[/red] {e}")
+            if not ci:
+                import traceback
+                console.print(f"[dim]{traceback.format_exc()}[/dim]")
+
+    class ScanEventHandler(FileSystemEventHandler):
+        """Handle file system events and trigger scans."""
+
+        def on_any_event(self, event):
+            nonlocal last_scan_time
+
+            # Ignore directory events and hidden files
+            if event.is_directory or event.src_path.endswith(('.pyc', '.git', '__pycache__')):
+                return
+
+            # Debounce: only scan if enough time has passed
+            current_time = time.monotonic()
+            if current_time - last_scan_time >= watch_interval:
+                last_scan_time = current_time
+                run_single_scan()
+
+    # Run initial scan
+    run_single_scan()
+
+    # Set up file watcher
+    event_handler = ScanEventHandler()
+    observer = Observer()
+    observer.schedule(event_handler, str(path.resolve()), recursive=True)
+    observer.start()
+
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]⚠[/yellow]  Watch mode stopped by user")
+        observer.stop()
+    observer.join()
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -86,7 +258,7 @@ def scan(
     ),
     format: OutputFormat = typer.Option(
         OutputFormat.table, "--format", "-f",
-        help="Output format: [table|json|sarif]",
+        help="Output format: [table|json|sarif|html]",
     ),
     policy_bundle: str = typer.Option(
         "default", "--policy-bundle", "-p",
@@ -113,6 +285,14 @@ def scan(
         False, "--no-codeprint",
         help="Skip source code scanning (faster, but less thorough).",
     ),
+    watch: bool = typer.Option(
+        False, "--watch", "-w",
+        help="Continuous scan mode — re-scan on file changes.",
+    ),
+    watch_interval: int = typer.Option(
+        2, "--watch-interval",
+        help="Watch mode polling interval in seconds (default: 2).",
+    ),
 ) -> None:
     """
     🔍 Scan a project for AI agents and check governance policies.
@@ -125,7 +305,24 @@ def scan(
         agentgovern scan ./my-project --policy-bundle enterprise
         agentgovern scan --fail-on critical --format sarif --output results.sarif
         agentgovern scan --server http://localhost:8000
+        agentgovern scan --watch --format html --output report.html
     """
+    # If watch mode is enabled, delegate to watch function
+    if watch:
+        _run_watch_mode(
+            path=path,
+            output=output,
+            format=format,
+            policy_bundle=policy_bundle,
+            fail_on=fail_on,
+            ci=ci,
+            server=server,
+            offline=offline,
+            no_codeprint=no_codeprint,
+            watch_interval=watch_interval,
+        )
+        return
+
     from agentgovern.scanner.manifest import discover_manifests, parse_manifest
     from agentgovern.scanner.dependency import scan_dependencies
     from agentgovern.scanner.codeprint import scan_codeprint, CodeprintScanResult
@@ -213,6 +410,18 @@ def scan(
                 console.print(f"[green]✓[/green] SARIF saved to [bold]{output}[/bold]")
         else:
             print(json.dumps(sarif, indent=2))
+        exit_code = 0 if abom["summary"]["overall_pass"] else 1
+        raise typer.Exit(exit_code)
+
+    elif format == OutputFormat.html:
+        from agentgovern.report.html import build_html_report, save_html_report
+        html = build_html_report(abom, policy_result, codeprint_result)
+        if output:
+            save_html_report(html, output)
+            if not ci:
+                console.print(f"[green]✓[/green] HTML report saved to [bold]{output}[/bold]")
+        else:
+            print(html)
         exit_code = 0 if abom["summary"]["overall_pass"] else 1
         raise typer.Exit(exit_code)
 

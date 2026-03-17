@@ -14,6 +14,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DevicesOtherIcon from "@mui/icons-material/DevicesOther";
 import BoltIcon from "@mui/icons-material/Bolt";
 import FactCheckIcon from "@mui/icons-material/FactCheck";
+import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 
 import { cn } from "@/lib/utils";
 
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
     { label: "Policy Enforcer", path: "/dashboard/policy", icon: PolicyIcon },
     { label: "Audit Ledger", path: "/dashboard/audit", icon: SecurityIcon },
     { label: "Trust Topology", path: "/dashboard/trust", icon: TimelineIcon },
+    { label: "QICACHE Analytics", path: "/dashboard/cache", icon: AutoGraphIcon },
     { label: "Edge Gateways", path: "/dashboard/gateways", icon: DevicesOtherIcon },
     { label: "SAP Demo", path: "/dashboard/demo", icon: BoltIcon },
 ];

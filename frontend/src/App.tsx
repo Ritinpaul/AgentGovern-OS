@@ -10,16 +10,8 @@ import { Demo } from "./pages/Demo";
 import { Fleet } from "./pages/Fleet";
 import { TrustTopology } from "./pages/TrustTopology";
 import { Gateways } from "./pages/Gateways";
-
-// Placeholder pages for routes
-const Placeholder = ({ title }: { title: string }) => (
-  <div className="flex flex-col h-full">
-    <h1 className="text-2xl font-semibold tracking-tight mb-6">{title}</h1>
-    <div className="flex-1 rounded-xl border border-dashed border-border flex items-center justify-center text-muted-foreground">
-      {title} Component Area
-    </div>
-  </div>
-);
+import { AuditLedger } from "./pages/AuditLedger";
+import { QICacheAnalytics } from "./pages/QICacheAnalytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,7 +36,8 @@ function App() {
             <Route path="fleet" element={<Fleet />} />
             <Route path="approvals" element={<Approvals />} />
             <Route path="policy" element={<Policy />} />
-            <Route path="audit" element={<Placeholder title="Federated Audit Ledger" />} />
+            <Route path="audit" element={<AuditLedger />} />
+            <Route path="cache" element={<QICacheAnalytics />} />
             <Route path="trust" element={<TrustTopology />} />
             <Route path="gateways" element={<Gateways />} />
             <Route path="demo" element={<Demo />} />

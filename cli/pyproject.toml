@@ -34,6 +34,9 @@ dev = [
     "pytest-cov>=6.0.0",
     "ruff>=0.8.0",
 ]
+watch = [
+    "watchdog>=6.0.0",  # For --watch mode
+]
 
 [project.scripts]
 agentgovern = "agentgovern.cli:app"

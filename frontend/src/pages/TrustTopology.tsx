@@ -38,7 +38,7 @@ export function TrustTopology() {
                     <div className="text-muted-foreground animate-pulse text-sm">Calculating node coordinates...</div>
                 ) : (
                     <div className="w-full h-full flex items-center justify-around relative">
-                        {tiers.map((tierName, tierIdx) => (
+                        {tiers.map((tierName) => (
                             <div key={tierName} className="flex flex-col items-center gap-12 relative z-10">
                                 <h3 className={cn(
                                     "text-[10px] font-bold tracking-[0.2em] mb-4 py-1 px-4 rounded-full border",
@@ -50,8 +50,8 @@ export function TrustTopology() {
                                 </h3>
 
                                 <div className="flex flex-wrap justify-center gap-8 max-w-[200px]">
-                                    {agents.filter((a: any) => a.tier.toUpperCase() === tierName).map((agent: any, agentIdx: number) => (
-                                        <AgentNode key={agent.code} agent={agent} tierIdx={tierIdx} />
+                                    {agents.filter((a: any) => a.tier.toUpperCase() === tierName).map((agent: any) => (
+                                        <AgentNode key={agent.code} agent={agent} />
                                     ))}
                                 </div>
                             </div>
@@ -98,7 +98,7 @@ export function TrustTopology() {
     );
 }
 
-function AgentNode({ agent, tierIdx }: { agent: any, tierIdx: number }) {
+function AgentNode({ agent }: { agent: any }) {
     const isPlatinum = agent.tier.toUpperCase() === "PLATINUM";
     const isGold = agent.tier.toUpperCase() === "GOLD";
 
