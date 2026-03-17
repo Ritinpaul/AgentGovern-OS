@@ -23,7 +23,7 @@ import json
 import uuid
 import logging
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ class DecisionRecord:
     human_override: Optional[dict] = None
     crewai_task_output: str = ""
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     hash: str = field(default="", init=False)
     prev_hash: str = ""
 

@@ -11,7 +11,7 @@ Usage in crews:
 import hashlib
 import re
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
@@ -117,7 +117,7 @@ class QICacheEngine:
         if self.db:
             try:
                 from sqlalchemy import select, text
-                now = datetime.utcnow()
+                now = datetime.now(timezone.utc)
                 result = self.db.execute(
                     text(
                         "SELECT response_text, response_metadata FROM query_cache "
@@ -163,7 +163,7 @@ class QICacheEngine:
             return False
 
         normalized = self.normalize(query_text)
-        expires = datetime.utcnow() + timedelta(days=s.ttl_days)
+        expires = datetime.now(timezone.utc) + timedelta(days=s.ttl_days)
 
         if self.redis:
             try:

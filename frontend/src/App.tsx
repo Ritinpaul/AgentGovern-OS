@@ -7,6 +7,9 @@ import { Policy } from "./pages/Policy";
 import { Approvals } from "./pages/Approvals";
 import { Settings } from "./pages/Settings";
 import { Demo } from "./pages/Demo";
+import { Fleet } from "./pages/Fleet";
+import { TrustTopology } from "./pages/TrustTopology";
+import { Gateways } from "./pages/Gateways";
 
 // Placeholder pages for routes
 const Placeholder = ({ title }: { title: string }) => (
@@ -38,12 +41,12 @@ function App() {
           {/* Dashboard — protected app shell */}
           <Route path="/dashboard" element={<MainLayout />}>
             <Route index element={<Overview />} />
-            <Route path="fleet" element={<Placeholder title="Agent Fleet Command Center" />} />
+            <Route path="fleet" element={<Fleet />} />
             <Route path="approvals" element={<Approvals />} />
             <Route path="policy" element={<Policy />} />
             <Route path="audit" element={<Placeholder title="Federated Audit Ledger" />} />
-            <Route path="trust" element={<Placeholder title="Trust Topology Graph" />} />
-            <Route path="gateways" element={<Placeholder title="Edge Gateways Fleet" />} />
+            <Route path="trust" element={<TrustTopology />} />
+            <Route path="gateways" element={<Gateways />} />
             <Route path="demo" element={<Demo />} />
             <Route path="settings" element={<Settings />} />
           </Route>

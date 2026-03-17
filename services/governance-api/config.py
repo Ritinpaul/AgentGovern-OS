@@ -39,8 +39,7 @@ class Settings(BaseSettings):
     qicache_ttl_days: int = 3
     qicache_enabled: bool = True
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
-
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 @lru_cache()
 def get_settings() -> Settings:

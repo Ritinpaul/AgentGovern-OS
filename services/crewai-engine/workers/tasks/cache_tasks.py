@@ -13,7 +13,7 @@ def evict_expired_cache(self):
     """Hourly task: remove expired cache entries from PostgreSQL and Redis."""
     try:
         import os
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
         # ── PostgreSQL eviction ──
         from sqlalchemy import create_engine, text
@@ -46,7 +46,7 @@ def evict_expired_cache(self):
             conn.commit()
 
         logger.info(f"[QICACHE] Evicted {evicted} expired entries")
-        return {"evicted": evicted, "timestamp": datetime.utcnow().isoformat()}
+        return {"evicted": evicted, "timestamp": datetime.now(timezone.utc).isoformat()}
 
     except Exception as exc:
         logger.error(f"[QICACHE] Eviction failed: {exc}")

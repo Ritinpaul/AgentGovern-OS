@@ -11,7 +11,7 @@ Wraps all DB interactions for GENESIS gene management:
 
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from decimal import Decimal
 
 from genesis.dna_sequencer import Gene
@@ -70,7 +70,7 @@ class GeneRegistry:
                         "strength": float(gene.strength),
                         "mutation_log": json.dumps(gene.mutation_log),
                         "created_at": gene.created_at,
-                        "updated_at": datetime.utcnow(),
+                        "updated_at": datetime.now(timezone.utc),
                     },
                 )
                 stored += 1
@@ -138,7 +138,7 @@ class GeneRegistry:
                     "gene_id": gene_id,
                     "delta": delta,
                     "log_entry": json.dumps(
-                        [{"type": "mutation", "delta": delta, "timestamp": datetime.utcnow().isoformat()}]
+                        [{"type": "mutation", "delta": delta, "timestamp": datetime.now(timezone.utc).isoformat()}]
                     ),
                 },
             )

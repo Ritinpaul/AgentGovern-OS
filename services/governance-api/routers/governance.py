@@ -9,9 +9,10 @@ It accepts a GovernanceEnvelope and returns a GovernanceVerdict.
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
@@ -77,7 +78,8 @@ def _evaluate_policy(
     Core policy evaluation logic.
     Returns a GovernanceVerdict based on the agent's registration + action context.
     """
-    audit_id = f"AUD-{uuid.uuid4().hex[:8].upper()}"
+    _hex: str = uuid.uuid4().hex
+    audit_id = f"AUD-{_hex[:8].upper()}"
     action = envelope.action_requested.lower()
 
     # ── Rule 1: Unregistered agent ─────────────────────────────────────────
@@ -304,11 +306,11 @@ async def evaluate(
                 {
                     "id": str(uuid.uuid4()),
                     "decision_id": verdict.audit_id,
-                    "agent_id": agent.id if hasattr(agent, "id") else agent["id"],
+                    "agent_id": agent["id"],
                     "reason": verdict.reason,
                     "priority": "high" if verdict.risk_score == "HIGH" else "medium",
                     "status": "pending",
-                    "context": envelope.context,
+                    "context": json.dumps(envelope.context),
                     "created_at": datetime.now(timezone.utc).isoformat(),
                 }
             )
@@ -340,3 +342,133 @@ async def governance_health():
             "anthropic", "autogen", "google_adk", "generic",
         ],
     }
+
+
+@router.get(
+    "/metrics",
+    summary="Live governance metrics for the command dashboard",
+    tags=["Universal Governance"],
+)
+async def governance_metrics(db: AsyncSession = Depends(get_db)):
+    """
+    Live operational metrics consumed by the AgentGovern Command Center.
+    Aggregates data from audit_log, agents, and escalation_cases tables.
+    """
+    from sqlalchemy import text
+    from datetime import datetime, timezone, timedelta
+
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
+    hour_ago = (now - timedelta(hours=1)).isoformat()
+
+    defaults = {
+        "total_evaluations": 0,
+        "approved": 0,
+        "blocked": 0,
+        "escalated": 0,
+        "approved_rate": 0.0,
+        "blocked_rate": 0.0,
+        "escalated_rate": 0.0,
+        "active_agents": 0,
+        "pending_escalations": 0,
+        "evaluations_last_1h": 0,
+        "evaluated_today": 0,
+        "risk_distribution": {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0},
+        "trust_tier_distribution": {"T0": 0, "T1": 0, "T2": 0, "T3": 0, "T4": 0},
+        "top_blocked_actions": [],
+        "cost_saved_usd": 0.0,
+    }
+
+    try:
+        # ── Verdict counts ──────────────────────────────────────────────────
+        verdict_rows = await db.execute(
+            text("SELECT verdict, COUNT(*) AS cnt FROM audit_log GROUP BY verdict")
+        )
+        verdict_counts: dict[str, int] = {r.verdict: r.cnt for r in verdict_rows.mappings()}
+
+        total = sum(verdict_counts.values())
+        approved = verdict_counts.get("APPROVED", 0)
+        blocked = verdict_counts.get("BLOCKED", 0)
+        escalated = verdict_counts.get("ESCALATED", 0)
+
+        # ── Risk distribution ───────────────────────────────────────────────
+        risk_rows = await db.execute(
+            text("SELECT risk_score, COUNT(*) AS cnt FROM audit_log GROUP BY risk_score")
+        )
+        risk_dist = {"LOW": 0, "MEDIUM": 0, "HIGH": 0, "CRITICAL": 0}
+        for r in risk_rows.mappings():
+            key = (r.risk_score or "LOW").upper()
+            if key in risk_dist:
+                risk_dist[key] = r.cnt
+
+        # ── Today / last-hour ───────────────────────────────────────────────
+        today_row = await db.execute(
+            text("SELECT COUNT(*) AS cnt FROM audit_log WHERE created_at >= :ts"),
+            {"ts": today_start},
+        )
+        evaluated_today = (today_row.mappings().first() or {}).get("cnt", 0)
+
+        hour_row = await db.execute(
+            text("SELECT COUNT(*) AS cnt FROM audit_log WHERE created_at >= :ts"),
+            {"ts": hour_ago},
+        )
+        evaluations_last_1h = (hour_row.mappings().first() or {}).get("cnt", 0)
+
+        # ── Top blocked actions ─────────────────────────────────────────────
+        block_rows = await db.execute(
+            text("""
+                SELECT action_requested, COUNT(*) AS cnt
+                FROM audit_log
+                WHERE verdict = 'BLOCKED'
+                GROUP BY action_requested
+                ORDER BY cnt DESC
+                LIMIT 5
+            """)
+        )
+        top_blocked = [r.action_requested for r in block_rows.mappings()]
+
+        # ── Fleet stats ─────────────────────────────────────────────────────
+        fleet_row = await db.execute(
+            text("SELECT COUNT(*) AS cnt FROM agents WHERE status = 'active'")
+        )
+        active_agents = (fleet_row.mappings().first() or {}).get("cnt", 0)
+
+        tier_rows = await db.execute(
+            text("SELECT tier, COUNT(*) AS cnt FROM agents WHERE status = 'active' GROUP BY tier")
+        )
+        tier_dist = {"T0": 0, "T1": 0, "T2": 0, "T3": 0, "T4": 0}
+        for r in tier_rows.mappings():
+            key = (r.tier or "T4").upper()
+            if key in tier_dist:
+                tier_dist[key] = r.cnt
+
+        # ── Pending escalations ─────────────────────────────────────────────
+        esc_row = await db.execute(
+            text("SELECT COUNT(*) AS cnt FROM escalation_cases WHERE status = 'pending'")
+        )
+        pending_escalations = (esc_row.mappings().first() or {}).get("cnt", 0)
+
+        # ── QICACHE cost savings (approx $0.003 per cached call at GPT-4o rate)
+        cost_saved_usd = round(approved * 0.003, 2)
+
+        return {
+            "total_evaluations": total,
+            "approved": approved,
+            "blocked": blocked,
+            "escalated": escalated,
+            "approved_rate": round(approved / total, 3) if total else 0.0,
+            "blocked_rate": round(blocked / total, 3) if total else 0.0,
+            "escalated_rate": round(escalated / total, 3) if total else 0.0,
+            "active_agents": active_agents,
+            "pending_escalations": pending_escalations,
+            "evaluations_last_1h": evaluations_last_1h,
+            "evaluated_today": evaluated_today,
+            "risk_distribution": risk_dist,
+            "trust_tier_distribution": tier_dist,
+            "top_blocked_actions": top_blocked,
+            "cost_saved_usd": cost_saved_usd,
+        }
+
+    except Exception as e:
+        # Return safe defaults if DB is unavailable so dashboard never crashes
+        return defaults

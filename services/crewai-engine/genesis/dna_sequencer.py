@@ -31,7 +31,7 @@ Strength (0.0 - 1.0):
 import re
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from decimal import Decimal
 
@@ -49,7 +49,7 @@ class Gene:
     version: int = 1
     strength: Decimal = Decimal("0.50")
     mutation_log: list = field(default_factory=list)
-    created_at: datetime = field(default_factory=datetime.utcnow)
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
     def strengthen(self, delta: float = 0.05) -> None:
@@ -58,7 +58,7 @@ class Gene:
         self.mutation_log.append({
             "type": "strengthen",
             "delta": delta,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         })
 
     def weaken(self, delta: float = 0.05) -> None:
@@ -67,7 +67,7 @@ class Gene:
         self.mutation_log.append({
             "type": "weaken",
             "delta": -delta,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         })
 
     @property
@@ -209,7 +209,7 @@ class DNASequencer:
                     "parent_agent_id": gene.agent_id,
                     "parent_gene_id": gene.id,
                     "parent_strength": float(gene.strength),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }],
             )
             inherited.append(child_gene)

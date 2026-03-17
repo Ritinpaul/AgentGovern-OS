@@ -238,6 +238,21 @@ class CacheAnalyticsResponse(BaseModel):
     cost_saved: Decimal
 
 
+class CacheSettingsRequest(BaseModel):
+    agent_id: str
+    cache_enabled: bool = True
+    save_enabled: bool = True
+    ttl_days: int = 3
+
+
+class CacheSettingsResponse(BaseModel):
+    agent_id: str
+    cache_enabled: bool
+    save_enabled: bool
+    ttl_days: int
+    updated_at: str
+
+
 # ============================================================
 # Health Check
 # ============================================================
