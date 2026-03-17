@@ -3,6 +3,7 @@ import { MetricCard } from "../components/ui/MetricCard";
 import { RecentAuditLedger } from "../components/ui/RecentAuditLedger";
 import { EnvironmentTopology } from "../components/ui/EnvironmentTopology";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { fetchMetrics } from "@/lib/api";
 
 // MUI Icons
@@ -16,6 +17,7 @@ const mockTrendData = (length = 7, min = 10, max = 50) =>
     Array.from({ length }, () => ({ value: Math.floor(Math.random() * (max - min + 1)) + min }));
 
 export function Overview() {
+    const navigate = useNavigate();
     const { data: metrics, isLoading } = useQuery({
         queryKey: ["governanceMetrics"],
         queryFn: fetchMetrics,
@@ -57,10 +59,16 @@ export function Overview() {
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <button className="text-xs font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-md transition-colors">
+                    <button
+                        onClick={() => navigate("/dashboard/audit")}
+                        className="text-xs font-medium bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-md transition-colors"
+                    >
                         Export Report
                     </button>
-                    <button className="text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 px-3 py-1.5 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(34,197,94,0.4)]">
+                    <button
+                        onClick={() => navigate("/dashboard/policy")}
+                        className="text-xs font-medium bg-emerald-600 text-white hover:bg-emerald-500 px-3 py-1.5 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(34,197,94,0.4)]"
+                    >
                         Deploy Policy
                     </button>
                 </div>

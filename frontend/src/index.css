@@ -145,6 +145,10 @@
   }
 
   /* Global Selection */
+  html {
+    scroll-behavior: smooth;
+  }
+
   ::selection {
     background-color: rgba(34, 197, 94, 0.25);
     color: #fff;

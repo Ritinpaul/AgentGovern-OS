@@ -358,8 +358,8 @@ async def governance_metrics(db: AsyncSession = Depends(get_db)):
     from datetime import datetime, timezone, timedelta
 
     now = datetime.now(timezone.utc)
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0).isoformat()
-    hour_ago = (now - timedelta(hours=1)).isoformat()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    hour_ago = now - timedelta(hours=1)
 
     defaults = {
         "total_evaluations": 0,

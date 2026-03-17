@@ -50,7 +50,7 @@ export function TopNav() {
                     <div className="h-6 w-px bg-border max-sm:hidden" aria-hidden="true" />
 
                     <button
-                        onClick={() => navigate('/approvals')}
+                        onClick={() => navigate('/dashboard/approvals')}
                         className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/10 rounded-md transition-colors relative"
                     >
                         <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive ring-2 ring-background"></span>

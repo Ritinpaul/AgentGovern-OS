@@ -169,7 +169,12 @@ const STATS = [
 ];
 
 /* ─── Navigation Links ───────────────────── */
-const NAV_LINKS = ["Overview", "Technology", "Demo", "Resources"];
+const NAV_LINKS = [
+    { label: "Overview", sectionId: "hero" },
+    { label: "Technology", sectionId: "technology" },
+    { label: "Demo", sectionId: "demo", route: "/dashboard/demo" },
+    { label: "Resources", sectionId: "resources" },
+];
 
 /* ════════════════════════════════════════════
    LANDING PAGE
@@ -254,7 +259,7 @@ export const LandingPage = () => {
                 initial="hidden"
                 animate="visible"
             >
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="max-w-7xl mx-auto flex items-center justify-between relative">
                     {/* Logo */}
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center">
@@ -266,26 +271,35 @@ export const LandingPage = () => {
                         </span>
                     </div>
 
-                    {/* Center nav links */}
-                    <div className="hidden md:flex items-center gap-1 px-2 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md">
+                    {/* Center nav links — absolutely centered over the hero cube */}
+                    <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-1 px-2 py-1.5 rounded-full border border-white/10 bg-white/[0.03] backdrop-blur-md">
                         {NAV_LINKS.map((link) => (
                             <button
-                                key={link}
-                                className="px-4 py-1.5 rounded-full text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
+                                key={link.label}
+                                onClick={() => {
+                                    if (link.route) {
+                                        navigate(link.route);
+                                    } else {
+                                        const el = document.getElementById(link.sectionId);
+                                        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }
+                                }}
+                                className="px-4 py-1.5 rounded-full text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all cursor-pointer"
                             >
-                                {link}
+                                {link.label}
                             </button>
                         ))}
                     </div>
 
-                    {/* Right buttons - Removed */}
-                    <div className="flex items-center gap-3">
-                    </div>
+                    {/* Right spacer mirrors logo width so pill stays truly centered */}
+                    <div className="w-40" />
                 </div>
+
             </motion.nav>
 
             {/* ─── Hero Section ─── */}
             <motion.section
+                id="hero"
                 className="relative z-10 min-h-screen flex flex-col items-center justify-center px-6 pt-20"
                 style={{ opacity: heroOpacity, scale: heroScale }}
             >
@@ -449,6 +463,7 @@ export const LandingPage = () => {
 
             {/* ─── Stats Section ─── */}
             <motion.section
+                id="resources"
                 className="relative z-10 py-32 px-6"
                 initial="hidden"
                 whileInView="visible"
@@ -495,13 +510,29 @@ export const LandingPage = () => {
 
             {/* ─── Feature Cards Section ─── */}
             <motion.section
+                id="technology"
                 className="relative z-10 py-20 px-6"
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={staggerContainer}
             >
-                <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-4">
+                <div className="max-w-5xl mx-auto">
+                <motion.h2
+                    className="text-center text-3xl md:text-4xl font-bold tracking-tight mb-4"
+                    variants={fadeUp}
+                    custom={0}
+                >
+                    The Technology Stack
+                </motion.h2>
+                <motion.p
+                    className="text-center text-white/40 mb-12 max-w-lg mx-auto"
+                    variants={fadeUp}
+                    custom={1}
+                >
+                    Modular governance primitives designed for enterprise reliability.
+                </motion.p>
+                <div className="grid md:grid-cols-3 gap-4">
                     {[
                         {
                             icon: <PolicyIcon sx={{ fontSize: 24, color: "#6ee7b7" }} />,
@@ -539,10 +570,12 @@ export const LandingPage = () => {
                         </motion.div>
                     ))}
                 </div>
+                </div>
             </motion.section>
 
-            {/* ─── Bottom CTA ─── */}
+            {/* ─── Demo CTA Section ─── */}
             <motion.section
+                id="demo"
                 className="relative z-10 py-24 px-6 text-center"
                 initial="hidden"
                 whileInView="visible"
@@ -592,12 +625,17 @@ export const LandingPage = () => {
                         © 2025 AgentGovern OS. Enterprise AI Governance Platform.
                     </p>
                     <div className="flex items-center gap-6">
-                        {["Privacy", "Terms", "Docs"].map((link) => (
+                        {([
+                            { label: "Privacy", path: null },
+                            { label: "Terms", path: null },
+                            { label: "Docs", path: "/dashboard/audit" },
+                        ] as { label: string; path: string | null }[]).map((link) => (
                             <button
-                                key={link}
-                                className="text-xs text-white/30 hover:text-white/60 transition-colors"
+                                key={link.label}
+                                onClick={() => link.path && navigate(link.path)}
+                                className={`text-xs text-white/30 hover:text-white/60 transition-colors ${link.path ? "cursor-pointer" : "cursor-default"}`}
                             >
-                                {link}
+                                {link.label}
                             </button>
                         ))}
                     </div>
