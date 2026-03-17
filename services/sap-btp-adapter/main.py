@@ -569,3 +569,488 @@ async def receive_btp_webhook(
     )
 
     return await evaluate_sap_event(event)
+
+
+# ─── SAP OData Bridge ─────────────────────────────────────────────────────────
+
+class ODataQueryRequest(BaseModel):
+    """Governed OData V4 query request."""
+    entity_set: str = Field(..., description="OData entity set, e.g. 'PurchaseOrderSet'")
+    filter: str | None = Field(None, description="OData $filter expression")
+    select: str | None = Field(None, description="OData $select fields")
+    top: int = Field(default=20, ge=1, le=1000)
+    skip: int = Field(default=0, ge=0)
+    agent_role: str = Field(default="fi_analyst", description="Role of the requesting agent")
+    odata_service_url: str | None = Field(
+        None,
+        description="Full OData service root URL. Falls back to SAP_ODATA_BASE_URL env var.",
+    )
+
+
+class ODataActionRequest(BaseModel):
+    """Governed OData action / function import call."""
+    action_name: str = Field(..., description="OData action or function import name")
+    parameters: dict = Field(default_factory=dict)
+    agent_role: str = Field(default="fi_analyst")
+    estimated_impact: float = Field(default=0.0, description="Estimated financial impact (INR)")
+
+
+@app.post(
+    "/sap/odata/query",
+    tags=["odata"],
+    summary="Governed OData V4 entity query",
+)
+async def governed_odata_query(req: ODataQueryRequest):
+    """Pass an SAP OData query through the governance pipeline before execution.
+
+    Flow:
+      1. Evaluate the data-read action via SENTINEL (data_access policy check)
+      2. If APPROVE → proxy the OData call to the SAP service and return results
+      3. If BLOCK / ESCALATE → return the verdict without executing the query
+
+    This prevents unauthorised data reads by governed agents.
+    """
+    import os
+
+    base_url = req.odata_service_url or os.getenv("SAP_ODATA_BASE_URL", "")
+
+    async with httpx.AsyncClient() as client:
+        # Step 1: Find agent for role
+        agent_id = await find_or_create_agent_for_role(req.agent_role, client)
+
+        # Step 2: Govern the data-read action
+        sentinel_payload = {
+            "agent_id": agent_id,
+            "action": {
+                "action_type": "query_data",
+                "amount": 0,
+                "target_entity": req.entity_set,
+                "filter": req.filter,
+            },
+            "context": {
+                "environment": "Cloud (SAP BTP)",
+                "odata_entity": req.entity_set,
+                "rows_requested": req.top,
+            },
+        }
+
+        verdict_str = "escalate"
+        reasoning = "Governance API unreachable"
+        confidence = 0.5
+
+        if agent_id:
+            try:
+                resp = await client.post(
+                    f"{GOVERNANCE_API_URL}/api/v1/sentinel/evaluate",
+                    json=sentinel_payload,
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    vd = resp.json()
+                    verdict_str = vd.get("verdict", "escalate")
+                    reasoning = vd.get("reasoning", "")
+                    confidence = vd.get("confidence", 0.5)
+            except httpx.RequestError as e:
+                logger.error(f"[ODATA-BRIDGE] SENTINEL unreachable: {e}")
+        else:
+            verdict_str = "block"
+            reasoning = "Zero-trust: no registered agent for this role"
+            confidence = 0.99
+
+        if verdict_str.upper() != "APPROVE":
+            return {
+                "governed": True,
+                "verdict": verdict_str.upper(),
+                "reasoning": reasoning,
+                "confidence": confidence,
+                "odata_result": None,
+                "message": "OData query blocked by governance policy.",
+            }
+
+        # Step 3: Execute the OData query if approved
+        odata_result = None
+        if base_url:
+            try:
+                params: dict = {"$top": req.top, "$skip": req.skip}
+                if req.filter:
+                    params["$filter"] = req.filter
+                if req.select:
+                    params["$select"] = req.select
+                params["$format"] = "json"
+
+                odata_resp = await client.get(
+                    f"{base_url}/{req.entity_set}",
+                    params=params,
+                    timeout=15.0,
+                    headers={"Accept": "application/json"},
+                )
+                odata_result = odata_resp.json()
+            except Exception as e:
+                odata_result = {"error": str(e), "note": "OData call failed post-governance"}
+        else:
+            odata_result = {
+                "note": "No SAP_ODATA_BASE_URL configured — governance verdict returned only",
+                "entity_set": req.entity_set,
+                "filter": req.filter,
+            }
+
+        return {
+            "governed": True,
+            "verdict": "APPROVE",
+            "reasoning": reasoning,
+            "confidence": confidence,
+            "odata_result": odata_result,
+        }
+
+
+@app.post(
+    "/sap/odata/action",
+    tags=["odata"],
+    summary="Governed OData action / function import call",
+)
+async def governed_odata_action(req: ODataActionRequest):
+    """Govern an SAP OData action invocation (e.g., ApproveWorkflowItem, PostDocument).
+
+    Higher-risk than a query — uses the estimated_impact amount for policy evaluation.
+    """
+    async with httpx.AsyncClient() as client:
+        agent_id = await find_or_create_agent_for_role(req.agent_role, client)
+
+        sentinel_payload = {
+            "agent_id": agent_id,
+            "action": {
+                "action_type": req.action_name.lower(),
+                "amount": req.estimated_impact,
+                "odata_action": req.action_name,
+                "parameters": req.parameters,
+            },
+            "context": {
+                "environment": "Cloud (SAP BTP)",
+                "odata_action": req.action_name,
+                "estimated_impact": req.estimated_impact,
+            },
+        }
+
+        verdict_data: dict = {
+            "verdict": "escalate",
+            "reasoning": "Governance API unreachable",
+            "confidence": 0.5,
+            "policy_results": [],
+        }
+
+        if agent_id:
+            try:
+                resp = await client.post(
+                    f"{GOVERNANCE_API_URL}/api/v1/sentinel/evaluate",
+                    json=sentinel_payload,
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    verdict_data = resp.json()
+            except httpx.RequestError:
+                pass
+
+        workflow = verdict_to_sap_workflow(
+            verdict_data.get("verdict", "escalate"),
+            verdict_data.get("reasoning", ""),
+        )
+
+        return {
+            "governed": True,
+            "action_name": req.action_name,
+            "verdict": verdict_data.get("verdict", "escalate").upper(),
+            "reasoning": verdict_data.get("reasoning", ""),
+            "confidence": verdict_data.get("confidence", 0.5),
+            "workflow_decision": workflow["workflow_decision"],
+            "requires_human_review": workflow["requires_human_review"],
+            "policy_violations": [
+                r["policy_code"]
+                for r in verdict_data.get("policy_results", [])
+                if not r.get("passed", True)
+            ],
+            "governance_timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+
+
+# ─── SAP Joule Integration ────────────────────────────────────────────────────
+
+class JouleQueryRequest(BaseModel):
+    """SAP Joule (AI copilot) governed query request."""
+    user_query: str = Field(..., description="Natural language query from the Joule user")
+    user_id: str = Field(..., description="SAP user ID or email of the Joule session owner")
+    joule_session_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    context_system: str = Field(
+        default="S4HANA",
+        description="Source SAP system context: S4HANA | Ariba | SuccessFactors | BTP",
+    )
+    data_sensitivity: str = Field(
+        default="internal",
+        description="Data sensitivity level: public | internal | confidential | restricted",
+    )
+    estimated_data_rows: int = Field(default=0, description="Estimated rows the query would touch")
+
+
+@app.post(
+    "/sap/joule/query",
+    tags=["joule"],
+    summary="Govern a SAP Joule AI copilot query",
+)
+async def govern_joule_query(req: JouleQueryRequest):
+    """Intercept and govern a SAP Joule AI query before it accesses enterprise data.
+
+    Joule queries are evaluated against:
+      - Data access policies (sensitivity classification)
+      - User entitlements (mapped to agent trust tier)
+      - Volume thresholds (large data extracts require escalation)
+
+    A governed Joule response instructs whether Joule should:
+      - Proceed and answer the query (APPROVE)
+      - Refuse with a policy explanation (BLOCK)
+      - Route to a human reviewer (ESCALATE)
+    """
+    import re
+
+    # Detect high-risk query patterns
+    risk_keywords = [
+        "salary", "payroll", "ssn", "social security", "password", "secret",
+        "export all", "download all", "bulk", "delete", "drop table",
+        "bank account", "iban", "card number",
+    ]
+    query_lower = req.user_query.lower()
+    detected_risks = [kw for kw in risk_keywords if kw in query_lower]
+
+    # Map Joule query to an action type
+    if any(w in query_lower for w in ["delete", "remove", "drop"]):
+        action_type = "delete_data"
+        base_impact = 50000.0
+    elif any(w in query_lower for w in ["export", "download", "extract", "all records"]):
+        action_type = "export_sensitive_data"
+        base_impact = float(req.estimated_data_rows * 10)
+    elif any(w in query_lower for w in ["update", "change", "modify", "set"]):
+        action_type = "modify_data"
+        base_impact = 5000.0
+    else:
+        action_type = "query_data"
+        base_impact = 0.0
+
+    sensitivity_multiplier = {
+        "public": 1.0,
+        "internal": 2.0,
+        "confidential": 5.0,
+        "restricted": 10.0,
+    }.get(req.data_sensitivity, 2.0)
+
+    impact = base_impact * sensitivity_multiplier
+    if detected_risks:
+        impact = max(impact, 100000.0)  # Force escalation threshold for PII-related queries
+
+    # Map user to agent role
+    joule_agent_role = "joule_fi_analyst" if req.context_system in ("S4HANA", "Ariba") else "joule_agent"
+
+    async with httpx.AsyncClient() as client:
+        agent_id = await find_or_create_agent_for_role(joule_agent_role, client)
+        if not agent_id:
+            agent_id = await find_or_create_agent_for_role("fi_analyst", client)
+
+        sentinel_payload = {
+            "agent_id": agent_id,
+            "action": {
+                "action_type": action_type,
+                "amount": impact,
+                "user_query": req.user_query[:200],
+                "data_sensitivity": req.data_sensitivity,
+                "detected_risk_keywords": detected_risks,
+            },
+            "context": {
+                "environment": f"Cloud (SAP {req.context_system})",
+                "source": "joule_copilot",
+                "joule_session_id": req.joule_session_id,
+                "user_id": req.user_id,
+                "estimated_data_rows": req.estimated_data_rows,
+            },
+        }
+
+        verdict_data: dict = {
+            "verdict": "escalate",
+            "reasoning": "Governance API unreachable — Joule query blocked (safe mode)",
+            "confidence": 0.5,
+            "policy_results": [],
+        }
+
+        if agent_id:
+            try:
+                resp = await client.post(
+                    f"{GOVERNANCE_API_URL}/api/v1/sentinel/evaluate",
+                    json=sentinel_payload,
+                    timeout=10.0,
+                )
+                if resp.status_code == 200:
+                    verdict_data = resp.json()
+            except httpx.RequestError as e:
+                logger.error(f"[JOULE] SENTINEL unreachable: {e}")
+
+    verdict = verdict_data.get("verdict", "escalate").upper()
+
+    joule_response_hint = {
+        "APPROVE": "Proceed with answering the user query.",
+        "BLOCK": (
+            "Do not answer this query. Respond: "
+            "'I'm unable to assist with this request due to enterprise data governance policies.'"
+        ),
+        "ESCALATE": (
+            "Pause and inform the user: "
+            "'This query requires additional authorisation. "
+            "A governance review has been initiated and you will be notified.'"
+        ),
+    }.get(verdict, "Pause and await governance review.")
+
+    return {
+        "governed": True,
+        "joule_session_id": req.joule_session_id,
+        "user_id": req.user_id,
+        "verdict": verdict,
+        "joule_instruction": joule_response_hint,
+        "reasoning": verdict_data.get("reasoning", ""),
+        "confidence": verdict_data.get("confidence", 0.5),
+        "detected_risks": detected_risks,
+        "action_type": action_type,
+        "estimated_impact": impact,
+        "policy_violations": [
+            r["policy_code"]
+            for r in verdict_data.get("policy_results", [])
+            if not r.get("passed", True)
+        ],
+        "requires_human_review": verdict != "APPROVE",
+        "governance_timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# ─── S/4HANA Workflow Trigger for ECLIPSE Escalations ────────────────────────
+
+class S4HANAWorkflowTriggerRequest(BaseModel):
+    """Trigger an SAP S/4HANA or BTP workflow for a governance escalation."""
+    escalation_case_id: str = Field(..., description="AgentGovern OS EscalationCase ID")
+    agent_code: str = Field(..., description="Agent code involved in the escalation")
+    escalation_reason: str = Field(..., description="Reason for escalation")
+    action_context: dict = Field(default_factory=dict, description="Original action context")
+    priority: str = Field(default="medium", description="high | medium | low")
+    # SAP BTP Workflow configuration (optional — uses env vars as fallback)
+    btp_workflow_definition_id: str = Field(
+        default="agentgovern-escalation-review",
+        description="SAP BTP Workflow Definition ID",
+    )
+    s4hana_workflow_task: str | None = Field(
+        None,
+        description="Optional: SAP S/4HANA work item task code for direct inbox creation",
+    )
+
+
+class S4HANAWorkflowResponse(BaseModel):
+    triggered: bool
+    workflow_instance_id: str | None
+    workflow_type: str
+    escalation_case_id: str
+    sap_inbox_url: str | None
+    message: str
+    triggered_at: str
+
+
+@app.post(
+    "/sap/s4hana/workflow/trigger",
+    response_model=S4HANAWorkflowResponse,
+    tags=["s4hana"],
+    summary="Trigger SAP S/4HANA / BTP workflow for a governance escalation",
+)
+async def trigger_s4hana_workflow(req: S4HANAWorkflowTriggerRequest):
+    """When ECLIPSE creates a governance escalation, fire an SAP BTP Workflow instance
+    so the human reviewer gets a task in their SAP Inbox (My Inbox / Fiori Launchpad).
+
+    Integration path:
+      AgentGovern ECLIPSE → POST /sap/s4hana/workflow/trigger
+        → SAP BTP Workflow Service REST API
+          → My Inbox task for the designated approver
+            → Approver decision synced back via /sap/webhook/btp
+
+    If SAP_BTP_WORKFLOW_URL is not configured, the adapter returns a simulated
+    workflow response (sandbox mode) so the rest of the flow can be tested.
+    """
+    import os
+
+    btp_workflow_url = os.getenv("SAP_BTP_WORKFLOW_URL", "")
+    btp_auth_token = os.getenv("SAP_BTP_AUTH_TOKEN", "")
+
+    workflow_instance_id = None
+    triggered = False
+    workflow_type = "simulation"
+    sap_inbox_url = None
+    message = ""
+
+    priority_map = {"high": "VERY_HIGH", "medium": "MEDIUM", "low": "LOW"}
+    sap_priority = priority_map.get(req.priority, "MEDIUM")
+
+    context_payload = {
+        "escalationCaseId": req.escalation_case_id,
+        "agentCode": req.agent_code,
+        "escalationReason": req.escalation_reason,
+        "priority": sap_priority,
+        "actionContext": req.action_context,
+        "governanceApiUrl": GOVERNANCE_API_URL,
+        "resolveCallbackUrl": f"{GOVERNANCE_API_URL}/api/v1/escalations/{req.escalation_case_id}/resolve",
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+
+    if btp_workflow_url and btp_auth_token:
+        try:
+            async with httpx.AsyncClient() as client:
+                wf_resp = await client.post(
+                    f"{btp_workflow_url}/v1/workflow-instances",
+                    json={
+                        "definitionId": req.btp_workflow_definition_id,
+                        "context": context_payload,
+                    },
+                    headers={
+                        "Authorization": f"Bearer {btp_auth_token}",
+                        "Content-Type": "application/json",
+                    },
+                    timeout=15.0,
+                )
+                if wf_resp.status_code in (200, 201):
+                    wf_data = wf_resp.json()
+                    workflow_instance_id = wf_data.get("id", str(uuid.uuid4()))
+                    triggered = True
+                    workflow_type = "sap_btp_workflow"
+                    sap_inbox_url = (
+                        f"{btp_workflow_url.replace('/workflow-service/rest', '')}"
+                        f"/launchpad#WorkflowTask-displayMyInbox"
+                    )
+                    message = f"SAP BTP Workflow instance {workflow_instance_id} created."
+                else:
+                    message = f"BTP Workflow API returned {wf_resp.status_code}: {wf_resp.text[:200]}"
+        except Exception as e:
+            message = f"Failed to reach SAP BTP Workflow Service: {e}"
+    else:
+        # Simulation mode — generate a fake workflow instance
+        workflow_instance_id = f"WF-SIM-{uuid.uuid4().hex[:8].upper()}"
+        triggered = True
+        workflow_type = "simulation"
+        sap_inbox_url = None
+        message = (
+            f"[SIMULATION] SAP BTP Workflow not configured "
+            f"(set SAP_BTP_WORKFLOW_URL + SAP_BTP_AUTH_TOKEN). "
+            f"Simulated instance: {workflow_instance_id}"
+        )
+
+    logger.info(
+        f"[S4WORKFLOW] Escalation {req.escalation_case_id}: "
+        f"triggered={triggered} type={workflow_type} instance={workflow_instance_id}"
+    )
+
+    return S4HANAWorkflowResponse(
+        triggered=triggered,
+        workflow_instance_id=workflow_instance_id,
+        workflow_type=workflow_type,
+        escalation_case_id=req.escalation_case_id,
+        sap_inbox_url=sap_inbox_url,
+        message=message,
+        triggered_at=datetime.now(timezone.utc).isoformat(),
+    )
