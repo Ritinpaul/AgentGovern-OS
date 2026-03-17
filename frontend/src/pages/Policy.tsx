@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/Card";
 import { cn } from "@/lib/utils";
@@ -9,32 +9,88 @@ import AddIcon from "@mui/icons-material/Add";
 import CodeIcon from "@mui/icons-material/Code";
 import LanguageIcon from "@mui/icons-material/Language";
 
-import { useQuery } from "@tanstack/react-query";
-import { fetchPolicies } from "@/lib/api";
-
-type PolicyType = {
-    id: string;
-    policy_code: string;
-    policy_name: string;
-    category: string;
-    rule_definition: any;
-    severity: string;
-    is_active: boolean;
-    applies_to_tiers: string[];
-};
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { fetchPolicies, type PolicyItem, publishPolicies, updatePolicy } from "@/lib/api";
 
 export function Policy() {
-    const { data: policies = [], isLoading } = useQuery<PolicyType[]>({
+    const queryClient = useQueryClient();
+    const { data: policies = [], isLoading } = useQuery<PolicyItem[]>({
         queryKey: ["policies"],
         queryFn: fetchPolicies,
     });
 
-    const [activeRule, setActiveRule] = useState<PolicyType | null>(null);
+    const [activeRule, setActiveRule] = useState<PolicyItem | null>(null);
+    const [draftRuleDefinition, setDraftRuleDefinition] = useState("");
+    const [banner, setBanner] = useState<{ kind: "success" | "error"; message: string } | null>(null);
 
-    // Initialize selection when data loads
-    if (!activeRule && policies.length > 0) {
-        setActiveRule(policies[0]);
-    }
+    const saveMutation = useMutation({
+        mutationFn: async () => {
+            if (!activeRule) {
+                throw new Error("Select a policy before saving");
+            }
+            const parsedRule = JSON.parse(draftRuleDefinition);
+            return updatePolicy(activeRule.id, {
+                rule_definition: parsedRule,
+            });
+        },
+        onSuccess: (updated) => {
+            setActiveRule(updated);
+            setDraftRuleDefinition(JSON.stringify(updated.rule_definition ?? {}, null, 2));
+            setBanner({ kind: "success", message: `Saved ${updated.policy_code} to draft.` });
+            queryClient.invalidateQueries({ queryKey: ["policies"] });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : "Failed to save draft";
+            setBanner({ kind: "error", message });
+        },
+    });
+
+    const publishMutation = useMutation({
+        mutationFn: publishPolicies,
+        onSuccess: (result) => {
+            setBanner({
+                kind: "success",
+                message: `Published ${result.rule_count} policies as ${result.version}.`,
+            });
+        },
+        onError: (error: unknown) => {
+            const message = error instanceof Error ? error.message : "Failed to publish policy bundle";
+            setBanner({ kind: "error", message });
+        },
+    });
+
+    useEffect(() => {
+        if (!activeRule && policies.length > 0) {
+            setActiveRule(policies[0]);
+        }
+    }, [activeRule, policies]);
+
+    useEffect(() => {
+        if (activeRule) {
+            setDraftRuleDefinition(JSON.stringify(activeRule.rule_definition ?? {}, null, 2));
+        }
+    }, [activeRule]);
+
+    const isDraftDirty = useMemo(() => {
+        if (!activeRule) {
+            return false;
+        }
+        const current = JSON.stringify(activeRule.rule_definition ?? {}, null, 2);
+        return current !== draftRuleDefinition;
+    }, [activeRule, draftRuleDefinition]);
+
+    const saveDraft = async () => {
+        setBanner(null);
+        await saveMutation.mutateAsync();
+    };
+
+    const publishBundle = async () => {
+        setBanner(null);
+        if (isDraftDirty) {
+            await saveMutation.mutateAsync();
+        }
+        await publishMutation.mutateAsync();
+    };
 
     return (
         <div className="flex flex-col h-full overflow-hidden">
@@ -53,11 +109,28 @@ export function Policy() {
                         <span className="text-xs text-muted-foreground font-mono">Draft Hash:</span>
                         <span className="text-xs text-white font-mono">0x7f4a...e83a</span>
                     </div>
-                    <button className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-md transition-colors shadow-[0_0_15px_-3px_rgba(34,197,94,0.4)]">
-                        Publish Bundle
+                    <button
+                        onClick={publishBundle}
+                        disabled={publishMutation.isPending || saveMutation.isPending || isLoading || policies.length === 0}
+                        className="flex items-center gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-700/60 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md transition-colors shadow-glow"
+                    >
+                        {publishMutation.isPending ? "Publishing..." : "Publish Bundle"}
                     </button>
                 </div>
             </motion.div>
+
+            {banner && (
+                <div
+                    className={cn(
+                        "mb-3 rounded-md border px-3 py-2 text-xs",
+                        banner.kind === "success"
+                            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                            : "border-red-500/30 bg-red-500/10 text-red-300",
+                    )}
+                >
+                    {banner.message}
+                </div>
+            )}
 
             {/* Split Layout */}
             <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-6 pb-6">
@@ -103,7 +176,7 @@ export function Policy() {
                                                 </span>
                                             </div>
                                         </div>
-                                        {/* Custom Toggle */}
+                                        {/* Status indicator */}
                                         <div className={cn("w-8 h-4 rounded-full flex items-center p-0.5 transition-colors", rule.is_active ? "bg-primary" : "bg-muted")}>
                                             <div className={cn("w-3 h-3 bg-background rounded-full transform transition-transform", rule.is_active ? "translate-x-4" : "translate-x-0")} />
                                         </div>
@@ -170,18 +243,23 @@ export function Policy() {
                                         <span className="text-xs text-muted-foreground">policy_config.json</span>
                                     </div>
                                     <div className="p-4 text-emerald-400">
-                                        <pre>
-                                            <code>
-                                                {JSON.stringify(activeRule.rule_definition, null, 2)}
-                                            </code>
-                                        </pre>
+                                        <textarea
+                                            value={draftRuleDefinition}
+                                            onChange={(e) => setDraftRuleDefinition(e.target.value)}
+                                            className="w-full min-h-55 bg-transparent text-emerald-400 outline-none resize-y"
+                                            spellCheck={false}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="pt-4 border-t border-border/30 flex justify-end">
-                                <button className="text-sm font-medium text-white bg-white/10 hover:bg-white/20 px-4 py-2 rounded-md transition-all">
-                                    Save Changes to Draft
+                                <button
+                                    onClick={saveDraft}
+                                    disabled={saveMutation.isPending || !isDraftDirty}
+                                    className="text-sm font-medium text-white bg-white/10 hover:bg-white/20 disabled:bg-white/5 disabled:text-muted-foreground disabled:cursor-not-allowed px-4 py-2 rounded-md transition-all"
+                                >
+                                    {saveMutation.isPending ? "Saving..." : "Save Changes to Draft"}
                                 </button>
                             </div>
                         </CardContent>

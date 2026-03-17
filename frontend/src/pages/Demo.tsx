@@ -14,6 +14,7 @@ import HourglassTopIcon from "@mui/icons-material/HourglassTop";
 import SendIcon from "@mui/icons-material/Send";
 import TerminalIcon from "@mui/icons-material/Terminal";
 import SeedlingIcon from "@mui/icons-material/Spa";
+import { buildAuthHeaders } from "@/lib/api";
 
 const SAP_ADAPTER_URL = "http://localhost:8002";
 const GOVERNANCE_API_URL = "http://localhost:8000";
@@ -606,7 +607,7 @@ export function Demo() {
             try {
                 const r = await fetch(`${GOVERNANCE_API_URL}/api/v1/agents/`, {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
+                    headers: { "Content-Type": "application/json", ...buildAuthHeaders() },
                     body: JSON.stringify(agent),
                 });
                 if (r.ok || r.status === 409) ok++;

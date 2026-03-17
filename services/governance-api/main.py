@@ -68,6 +68,8 @@ from routers import governance  # Phase 2: Universal Connector
 from routers import contract    # Phase 4: Social Contracts
 from routers import auth        # Phase 5: JWT / API-Key Auth
 from routers import gdpr        # Phase 5: GDPR Data Export & Erasure
+from routers import gateways    # Phase 9.3: Live Gateways dashboard data
+from routers import realtime    # Phase 9.3: WebSocket live telemetry
 
 app.include_router(genesis.router)
 app.include_router(pulse.router)
@@ -79,6 +81,8 @@ app.include_router(governance.router)
 app.include_router(contract.router)
 app.include_router(auth.router)   # Phase 5: POST /auth/token, GET /auth/me
 app.include_router(gdpr.router)   # Phase 5: GET /gdpr/export, DELETE /gdpr/forget
+app.include_router(gateways.router)
+app.include_router(realtime.router)
 
 
 # ── Root & Health ─────────────────────────────────────────────────────────────

@@ -136,10 +136,16 @@ class PolicyResponse(BaseModel):
     policy_code: str
     policy_name: str
     category: str
+    description: str
+    rule_definition: dict
+    applies_to_roles: list[str]
+    applies_to_tiers: list[str]
+    action_on_violation: str
     severity: str
     is_active: bool
     version: int
     created_at: datetime
+    updated_at: datetime
 
     model_config = {"from_attributes": True}
 

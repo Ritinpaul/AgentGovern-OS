@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { fetchAgents } from "@/lib/api";
+import { fetchAgents, fetchMetrics } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useRealtimePulse } from "@/hooks/useRealtimePulse";
 
 // MUI Icons
 import ShieldIcon from "@mui/icons-material/Shield";
@@ -12,13 +13,24 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 
 export function Fleet() {
+    const realtime = useRealtimePulse();
+
     const { data: agentsData, isLoading } = useQuery({
         queryKey: ["agents"],
         queryFn: fetchAgents,
         refetchInterval: 10000,
     });
+    const { data: metrics } = useQuery({
+        queryKey: ["governance-metrics"],
+        queryFn: fetchMetrics,
+        refetchInterval: 10000,
+    });
 
     const agents = agentsData?.agents || [];
+    const activeAgents = agents.filter((agent: any) => agent.status === "active").length;
+    const avgTrust = agents.length > 0
+        ? agents.reduce((sum: number, agent: any) => sum + (agent.trust_score ?? 0), 0) / agents.length
+        : 0;
 
     const getTierColor = (tier: string) => {
         switch (tier.toUpperCase()) {
@@ -40,15 +52,24 @@ export function Fleet() {
                     </p>
                 </div>
                 <div className="flex gap-3">
+                    <div className="bg-white/[0.03] border border-border px-3 py-2 rounded-xl flex items-center gap-2">
+                        <span className={cn(
+                            "w-2 h-2 rounded-full",
+                            realtime.connected ? "bg-emerald-500" : "bg-amber-500"
+                        )} />
+                        <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+                            {realtime.connected ? "Live stream" : `Reconnecting (${realtime.reconnectAttempt})`}
+                        </div>
+                    </div>
                     <div className="bg-white/[0.03] border border-border px-4 py-2 rounded-xl flex items-center gap-4">
                         <div className="text-center">
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Power</div>
-                            <div className="text-sm font-mono text-white">942.8 TFLOPS</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Total Agents</div>
+                            <div className="text-sm font-mono text-white">{agentsData?.total ?? 0}</div>
                         </div>
                         <div className="w-px h-8 bg-white/[0.05]" />
                         <div className="text-center">
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Health Score</div>
-                            <div className="text-sm font-mono text-emerald-400">98.2%</div>
+                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Evaluations / 1h</div>
+                            <div className="text-sm font-mono text-emerald-400">{metrics?.evaluations_last_1h ?? 0}</div>
                         </div>
                     </div>
                 </div>
@@ -58,23 +79,23 @@ export function Fleet() {
                 {/* Quick stats cards */}
                 <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 relative overflow-hidden group">
                     <TrendingUpIcon sx={{ fontSize: 40 }} className="absolute -right-2 -bottom-2 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors" />
-                    <div className="text-xs font-semibold text-emerald-400/70 uppercase tracking-widest mb-1">Compute Utilization</div>
-                    <div className="text-2xl font-mono text-white">64.2%</div>
+                    <div className="text-xs font-semibold text-emerald-400/70 uppercase tracking-widest mb-1">Active Agents</div>
+                    <div className="text-2xl font-mono text-white">{activeAgents}</div>
                 </div>
                 <div className="bg-blue-500/5 border border-blue-500/10 rounded-2xl p-4 relative overflow-hidden group">
                     <OnlinePredictionIcon sx={{ fontSize: 40 }} className="absolute -right-2 -bottom-2 text-blue-500/10 group-hover:text-blue-500/20 transition-colors" />
-                    <div className="text-xs font-semibold text-blue-400/70 uppercase tracking-widest mb-1">Active Sessions</div>
-                    <div className="text-2xl font-mono text-white">1,204</div>
+                    <div className="text-xs font-semibold text-blue-400/70 uppercase tracking-widest mb-1">Pending Escalations</div>
+                    <div className="text-2xl font-mono text-white">{metrics?.pending_escalations ?? 0}</div>
                 </div>
                 <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4 relative overflow-hidden group">
                     <VerifiedUserIcon sx={{ fontSize: 40 }} className="absolute -right-2 -bottom-2 text-amber-500/10 group-hover:text-amber-500/20 transition-colors" />
                     <div className="text-xs font-semibold text-amber-400/70 uppercase tracking-widest mb-1">Avg Trust Score</div>
-                    <div className="text-2xl font-mono text-white">0.94</div>
+                    <div className="text-2xl font-mono text-white">{avgTrust.toFixed(2)}</div>
                 </div>
                 <div className="bg-cyan-500/5 border border-cyan-500/10 rounded-2xl p-4 relative overflow-hidden group">
                     <ShieldIcon sx={{ fontSize: 40 }} className="absolute -right-2 -bottom-2 text-cyan-500/10 group-hover:text-cyan-500/20 transition-colors" />
-                    <div className="text-xs font-semibold text-cyan-400/70 uppercase tracking-widest mb-1">Sentinel Uptime</div>
-                    <div className="text-2xl font-mono text-white">99.99%</div>
+                    <div className="text-xs font-semibold text-cyan-400/70 uppercase tracking-widest mb-1">Cost Saved (USD)</div>
+                    <div className="text-2xl font-mono text-white">{(metrics?.cost_saved_usd ?? 0).toFixed(0)}</div>
                 </div>
             </div>
 

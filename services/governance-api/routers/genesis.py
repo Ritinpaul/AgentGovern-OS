@@ -21,6 +21,7 @@ from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
+from middleware.auth import require_roles, ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR
 from models import Agent, AgentGene
 from schemas import AgentCreate, AgentResponse, AgentListResponse
 
@@ -54,7 +55,11 @@ class DNAMutateRequest(BaseModel):
 # ──── Existing endpoints ────
 
 @router.post("/", response_model=AgentResponse, status_code=status.HTTP_201_CREATED)
-async def register_agent(agent_in: AgentCreate, db: AsyncSession = Depends(get_db)):
+async def register_agent(
+    agent_in: AgentCreate,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR)),
+):
     """Register a new agent in the GENESIS registry."""
     existing = await db.execute(select(Agent).where(Agent.agent_code == agent_in.agent_code))
     if existing.scalar_one_or_none():
@@ -85,6 +90,7 @@ async def list_agents(
     skip: int = 0,
     limit: int = 50,
     db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR)),
 ):
     """List all agents with optional filters."""
     query = select(Agent)
@@ -105,7 +111,11 @@ async def list_agents(
 
 
 @router.get("/{agent_id}", response_model=AgentResponse)
-async def get_agent(agent_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_agent(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR)),
+):
     """Get a single agent by ID."""
     agent = await db.get(Agent, agent_id)
     if not agent:
@@ -114,7 +124,12 @@ async def get_agent(agent_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{agent_id}", response_model=AgentResponse)
-async def update_agent(agent_id: UUID, updates: dict, db: AsyncSession = Depends(get_db)):
+async def update_agent(
+    agent_id: UUID,
+    updates: dict,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR)),
+):
     """Update agent fields (partial update)."""
     agent = await db.get(Agent, agent_id)
     if not agent:
@@ -131,7 +146,11 @@ async def update_agent(agent_id: UUID, updates: dict, db: AsyncSession = Depends
 
 
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def retire_agent(agent_id: UUID, db: AsyncSession = Depends(get_db)):
+async def retire_agent(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR)),
+):
     """Retire an agent (soft delete — sets status to 'retired')."""
     agent = await db.get(Agent, agent_id)
     if not agent:
@@ -141,7 +160,11 @@ async def retire_agent(agent_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{agent_id}/dna")
-async def get_agent_dna(agent_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_agent_dna(
+    agent_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR)),
+):
     """Get agent's Decision DNA profile with all genes."""
     agent = await db.get(Agent, agent_id)
     if not agent:
@@ -176,6 +199,7 @@ async def mutate_agent_dna(
     agent_id: UUID,
     request: DNAMutateRequest,
     db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR)),
 ):
     """Mutate a specific DNA gene trait for an agent.
 
@@ -270,6 +294,7 @@ async def diff_agent_dna(
     agent_id: UUID,
     other_agent_id: UUID,
     db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR)),
 ):
     """Compare DNA profiles of two agents trait by trait.
 
@@ -335,6 +360,7 @@ async def get_agent_lineage(
     agent_id: UUID,
     max_depth: int = 10,
     db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR, ROLE_AUDITOR)),
 ):
     """Get the full lineage tree for an agent.
 
@@ -440,6 +466,7 @@ class BulkAgentImportRequest(BaseModel):
 async def bulk_import_agents(
     body: BulkAgentImportRequest,
     db: AsyncSession = Depends(get_db),
+    _: dict = Depends(require_roles(ROLE_ADMIN, ROLE_OPERATOR)),
 ):
     """Bulk-import agents from a JSON / YAML manifest.
 

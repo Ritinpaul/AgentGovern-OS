@@ -31,6 +31,7 @@ from schemas import (
     SentinelVerdictResponse,
     SentinelVerdict,
 )
+from policy.distribution import PolicyDistributionService, PolicyRule
 from policy.prophecy import ProphecyEngine
 
 logger = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["sentinel"])
 
 _prophecy = ProphecyEngine()
+_policy_distribution = PolicyDistributionService()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -255,6 +257,32 @@ class PolicyUpdateRequest(BaseModel):
     is_active: bool | None = None
 
 
+class PolicyPublishResponse(BaseModel):
+    version: str
+    hash: str
+    rule_count: int
+    published_at: str
+
+
+def _policy_to_rule(policy: Policy) -> PolicyRule:
+    """Convert ORM policy rows into distributable policy bundle rules."""
+    environment_scope = policy.rule_definition.get("environment_scope", ["cloud", "edge", "client"])
+    params = {
+        k: v
+        for k, v in policy.rule_definition.items()
+        if k != "type"
+    }
+    return PolicyRule(
+        id=str(policy.id),
+        name=policy.policy_code,
+        type=policy.rule_definition.get("type", "custom"),
+        parameters=params,
+        on_fail=policy.action_on_violation,
+        environment_scope=environment_scope,
+        active=policy.is_active,
+    )
+
+
 @router.patch("/api/v1/policies/{policy_id}", response_model=PolicyResponse)
 async def update_policy(
     policy_id: UUID,
@@ -289,6 +317,47 @@ async def update_policy(
     await db.flush()
     await db.refresh(policy)
     return policy
+
+
+@router.post("/api/v1/policies/publish", response_model=PolicyPublishResponse)
+async def publish_policies(db: AsyncSession = Depends(get_db)):
+    """Create and activate a new policy bundle from all active policies."""
+    result = await db.execute(select(Policy).where(Policy.is_active == True).order_by(Policy.policy_code))
+    active_policies = result.scalars().all()
+    if not active_policies:
+        raise HTTPException(status_code=400, detail="No active policies to publish")
+
+    rules = [_policy_to_rule(policy) for policy in active_policies]
+    bundle = _policy_distribution.create_bundle(
+        rules=rules,
+        metadata={"source": "dashboard", "policy_count": len(active_policies)},
+    )
+
+    return PolicyPublishResponse(
+        version=bundle.version,
+        hash=bundle.hash,
+        rule_count=len(rules),
+        published_at=bundle.valid_from.isoformat(),
+    )
+
+
+@router.get("/sentinel/policies/bundle")
+async def get_edge_policy_bundle(db: AsyncSession = Depends(get_db)):
+    """Serve latest edge-scoped policy bundle for gateway sync clients."""
+    current = _policy_distribution.get_current_bundle()
+    if not current:
+        result = await db.execute(select(Policy).where(Policy.is_active == True).order_by(Policy.policy_code))
+        active_policies = result.scalars().all()
+        if not active_policies:
+            return {"version": "none", "hash": "", "rules": [], "environment": "edge", "total_rules": 0}
+
+        rules = [_policy_to_rule(policy) for policy in active_policies]
+        _policy_distribution.create_bundle(
+            rules=rules,
+            metadata={"source": "auto-init", "policy_count": len(active_policies)},
+        )
+
+    return _policy_distribution.get_bundle_for_environment("edge")
 
 
 @router.delete("/api/v1/policies/{policy_id}", status_code=status.HTTP_204_NO_CONTENT)
