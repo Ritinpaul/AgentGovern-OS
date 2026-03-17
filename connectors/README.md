@@ -1,8 +1,51 @@
-# AgentGovern OS — Connector Usage Examples
+# AgentGovern SDK — Universal AI Agent Governance
 
-This directory contains end-to-end usage examples for each connector.
+[![PyPI version](https://badge.fury.io/py/agentgovern-sdk.svg)](https://pypi.org/project/agentgovern-sdk/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-## Quick Start: Any Agent in 2 Lines
+**AgentGovern SDK** is a universal governance framework for AI agents. It provides pre-built connectors for all major agent frameworks, allowing you to add policy-based governance, audit trails, and human-in-the-loop controls to any AI agent with just a few lines of code.
+
+## 🌟 Features
+
+- **🔌 Universal Connectors** — Pre-built support for CrewAI, LangChain, OpenAI Agents SDK, Anthropic, AutoGen, and generic HTTP/webhook systems
+- **🛡️ Policy Enforcement** — Block, approve, or escalate agent actions based on configurable policies
+- **📊 Audit Trail** — Immutable decision ledger with hash-chain verification
+- **👤 Human-in-the-Loop** — Automatic escalation for high-risk or ambiguous decisions
+- **⚡ Fail-Safe & Fail-Open** — Choose between blocking or allowing actions when governance server is unreachable
+- **🔐 Zero Trust** — No agent action executes without explicit approval
+
+## 📦 Installation
+
+### Core SDK (required)
+
+```bash
+pip install agentgovern-sdk
+```
+
+### Framework-Specific Connectors (optional)
+
+```bash
+# For CrewAI
+pip install agentgovern-sdk[crewai]
+
+# For OpenAI Agents SDK
+pip install agentgovern-sdk[openai]
+
+# For Anthropic Claude
+pip install agentgovern-sdk[anthropic]
+
+# For LangChain
+pip install agentgovern-sdk[langchain]
+
+# For Microsoft AutoGen
+pip install agentgovern-sdk[autogen]
+
+# Install all connectors
+pip install agentgovern-sdk[all]
+```
+
+## 🚀 Quick Start: Any Agent in 2 Lines
 
 ### CrewAI Agent
 ```python
