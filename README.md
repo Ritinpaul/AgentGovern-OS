@@ -108,6 +108,32 @@ agentgovern scan .
 └──────────────────────────────────────────────────────────┘
 ```
 
+```mermaid
+flowchart LR
+  A[Adapters and Connectors] --> B[Governance API]
+  B --> C[GENESIS]
+  B --> D[PULSE]
+  B --> E[SENTINEL]
+  B --> F[ECLIPSE]
+  B --> G[ANCESTOR]
+  B --> H[QICACHE]
+  C --> I[(PostgreSQL)]
+  D --> I
+  E --> I
+  F --> I
+  G --> I
+  H --> J[(Redis)]
+  B --> K[(Prometheus /metrics)]
+  L[React Dashboard] --> B
+```
+
+## Quick Links
+
+- Quickstart: `docs/QUICKSTART.md`
+- API reference: `docs/API_REFERENCE.md`
+- Connector guide: `docs/CONNECTORS.md`
+- Demo runbook: `docs/DEMO_SCENARIO.md`
+
 ---
 
 ## Project Structure

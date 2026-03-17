@@ -20,9 +20,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from models import (
     Agent, TrustEvent, Decision, EscalationCase,
-    SocialContract, QueryCache, AuditLog,
+    SocialContract, QueryCache,
 )
 from middleware.auth import require_roles, ROLE_ADMIN, ROLE_AUDITOR
+
+try:
+    from models import AuditLog
+except ImportError:  # pragma: no cover - compatibility for schemas missing AuditLog model
+    AuditLog = None
 
 logger = logging.getLogger(__name__)
 
@@ -210,20 +215,21 @@ async def forget_agent(agent_id: UUID, db: AsyncSession = Depends(get_db)):
     actions_taken.append("cache_attribution_cleared")
 
     # ── Write erasure audit record ──
-    erasure_log = AuditLog(
-        id=uuid.uuid4(),
-        action="gdpr_erasure",
-        actor="gdpr_endpoint",
-        target_resource=f"agent:{agent_id}",
-        details={
-            "original_agent_id": str(agent_id),
-            "anonymised_as": anon_code,
-            "actions_taken": actions_taken,
-            "erased_at": datetime.now(timezone.utc).isoformat(),
-        },
-        outcome="success",
-    )
-    db.add(erasure_log)
+    if AuditLog is not None:
+        erasure_log = AuditLog(
+            id=uuid.uuid4(),
+            action="gdpr_erasure",
+            actor="gdpr_endpoint",
+            target_resource=f"agent:{agent_id}",
+            details={
+                "original_agent_id": str(agent_id),
+                "anonymised_as": anon_code,
+                "actions_taken": actions_taken,
+                "erased_at": datetime.now(timezone.utc).isoformat(),
+            },
+            outcome="success",
+        )
+        db.add(erasure_log)
 
     await db.flush()
 
