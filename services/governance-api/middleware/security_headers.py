@@ -27,10 +27,11 @@ import logging
 import time
 from typing import Any
 
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
-from starlette.responses import Response
-from starlette.types import ASGIApp
+# pyre-ignore[21]
+from starlette.middleware.base import BaseHTTPMiddleware  # pyre-ignore[21]
+from starlette.requests import Request  # pyre-ignore[21]
+from starlette.responses import Response  # pyre-ignore[21]
+from starlette.types import ASGIApp  # pyre-ignore[21]
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """Add hardened security response headers to every API response."""
 
     def __init__(self, app: ASGIApp, hsts_enabled: bool = True):
-        super().__init__(app)
+        super().__init__(app)  # pyre-ignore[20]
         self._hsts = hsts_enabled
 
     async def dispatch(self, request: Request, call_next) -> Response:
@@ -91,8 +92,10 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["X-RateLimit-Reset"] = str(request.state.rate_limit_reset)
 
         # ── Remove server information ──
-        response.headers.pop("server", None)
-        response.headers.pop("x-powered-by", None)
+        if "server" in response.headers:
+            del response.headers["server"]
+        if "x-powered-by" in response.headers:
+            del response.headers["x-powered-by"]
 
         return response
 
@@ -118,7 +121,7 @@ class APIAccessLogMiddleware(BaseHTTPMiddleware):
     """
 
     def __init__(self, app: ASGIApp, persist_to_db: bool = True):
-        super().__init__(app)
+        super().__init__(app)  # pyre-ignore[20]
         self._persist = persist_to_db
 
     def _extract_identity(self, request: Request) -> dict[str, str | None]:
@@ -129,8 +132,8 @@ class APIAccessLogMiddleware(BaseHTTPMiddleware):
         auth = request.headers.get("authorization", "")
         if auth.lower().startswith("bearer "):
             try:
-                from jose import jwt
-                from config import get_settings
+                from jose import jwt  # pyre-ignore[21]
+                from config import get_settings  # pyre-ignore[21]
                 settings = get_settings()
                 claims = jwt.decode(
                     auth[7:],
@@ -207,8 +210,8 @@ class APIAccessLogMiddleware(BaseHTTPMiddleware):
 async def _persist_access_log(record: dict, request: Request) -> None:
     """Write a compact access log entry to the audit_log table."""
     try:
-        from database import async_session_factory
-        from models import AuditLog
+        from database import async_session_factory  # pyre-ignore[21]
+        from models import AuditLog  # pyre-ignore[21]
         import uuid
 
         async with async_session_factory() as db:

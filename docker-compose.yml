@@ -34,6 +34,28 @@ services:
       retries: 6
       start_period: 20s
 
+  # === SAP BTP Adapter (port 8002) ===
+  sap-btp-adapter:
+    build:
+      context: ./services/sap-btp-adapter
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    depends_on:
+      - api
+    environment:
+      - GOVERNANCE_API_URL=http://api:8000
+    volumes:
+      - ./services/sap-btp-adapter:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+
   # === CrewAI Agent Engine ===
   crewai-engine:
     build:
@@ -46,6 +68,8 @@ services:
       - GOVERNANCE_API_URL=http://api:8000
       - OLLAMA_BASE_URL=http://ollama:11434
       - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     volumes:
       - ./services/crewai-engine:/app
     restart: unless-stopped

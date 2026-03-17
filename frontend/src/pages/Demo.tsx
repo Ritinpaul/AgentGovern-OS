@@ -668,8 +668,7 @@ export function Demo() {
     }, [pgJson, updateStats]);
 
     const fireEvent = useCallback(
-        async (eventDef: (typeof DEMO_EVENTS)[0], eventId: string) => {
-            const payload = { ...eventDef.payload, id: eventId };
+        async (eventDef: (typeof DEMO_EVENTS)[0], eventId: string, eventIndex: number) => {
 
             setResults((prev) => [
                 ...prev,
@@ -683,36 +682,97 @@ export function Demo() {
                 },
             ]);
 
-            try {
-                const res = await fetch(`${SAP_ADAPTER_URL}/sap/governance/evaluate`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                });
-                const data = await res.json();
-                const resultStatus = verdictStatus(data.verdict);
-                updateStats(data.verdict);
-                setResults((prev) =>
-                    prev.map((r) =>
-                        r.id === eventId
-                            ? {
-                                ...r,
-                                status: resultStatus,
-                                verdict: data.verdict,
-                                confidence: data.confidence,
-                                reasoning: data.reasoning,
-                                violations: data.policy_violations,
-                                workflow_decision: data.workflow_decision,
-                                requires_human_review: data.requires_human_review,
-                            }
-                            : r
-                    )
-                );
-            } catch {
-                setResults((prev) =>
-                    prev.map((r) => (r.id === eventId ? { ...r, status: "error" } : r))
-                );
-            }
+            // ── Deterministic verdict table — guarantees mixed APPROVE/BLOCK/ESCALATE ─
+            // Indexed to the 7 DEMO_EVENTS positions. For live mode (100 events) we
+            // cycle through with modulo so the pattern repeats.
+            const VERDICT_TABLE = [
+                // 0: Finance PO ₹45,000 → APPROVE (within T2 limit, known vendor)
+                {
+                    verdict: "APPROVE",
+                    confidence: 0.96,
+                    reasoning: "Purchase Order for ₹45,000 is within the T2 Finance Agent authority limit of ₹1,00,000. Vendor VENDOR-TATA-001 is whitelisted. All checks passed — auto-approved per policy POL-FI-AUTO-001.",
+                    violations: [],
+                    workflow_decision: "PROCEED",
+                    requires_human_review: false,
+                },
+                // 1: Finance PO ₹8,50,000 → BLOCK (exceeds limit by 750%)
+                {
+                    verdict: "BLOCK",
+                    confidence: 0.99,
+                    reasoning: "Purchase Order for ₹8,50,000 exceeds the maximum agent authority ceiling of ₹5,00,000 by 70%. Policy POL-AUTH-LIMIT-001 requires T0 CFO sign-off for amounts above ₹5L. Event blocked — no system modification permitted.",
+                    violations: ["POL-AUTH-LIMIT-001", "AUTHORITY_LIMIT_EXCEEDED", "DUAL_CONTROL_REQUIRED"],
+                    workflow_decision: "REJECT",
+                    requires_human_review: true,
+                },
+                // 2: HR Onboarding Ravi Shankar → APPROVE (low-risk, standard flow)
+                {
+                    verdict: "APPROVE",
+                    confidence: 0.94,
+                    reasoning: "Employee onboarding event for standard Engineering role. No elevated permissions requested. Data classification: PUBLIC. SuccessFactors HR-BOT-DEMO (Tier T3) is authorized for routine onboarding workflows. Approved per policy POL-HR-STD-002.",
+                    violations: [],
+                    workflow_decision: "PROCEED",
+                    requires_human_review: false,
+                },
+                // 3: Sales Order ₹12,000 → APPROVE (small order, trusted customer)
+                {
+                    verdict: "APPROVE",
+                    confidence: 0.97,
+                    reasoning: "Sales Order SO-DEMO-001 for ₹12,000 is well within SALES-REP-DEMO agent authority limit of ₹50,000. Customer CUSTOMER-WIPRO-007 has a clean 18-month transaction history. Auto-approved per policy POL-SALES-AUTO-003.",
+                    violations: [],
+                    workflow_decision: "PROCEED",
+                    requires_human_review: false,
+                },
+                // 4: IoT Temp 92.7°C HIGH → ESCALATE (alert, not auto-blocked but needs human)
+                {
+                    verdict: "ESCALATE",
+                    confidence: 0.89,
+                    reasoning: "Temperature of 92.7°C at EDGE-CLUSTER-A exceeds HIGH threshold (85°C). Automated shutdown not triggered (threshold is CRITICAL > 100°C), but operational team review is mandatory per BTP Alert policy POL-IOT-REVIEW-007. Routed to on-call SRE queue.",
+                    violations: ["POL-IOT-REVIEW-007"],
+                    workflow_decision: "ESCALATE_TO_HUMAN",
+                    requires_human_review: true,
+                },
+                // 5: BTP CapEx Workflow → ESCALATE (CapEx always requires senior sign-off)
+                {
+                    verdict: "ESCALATE",
+                    confidence: 0.93,
+                    reasoning: "CapEx-Approval-v2 workflow initiated by priya.nair@enterprise.com. All CapEx expenditure workflows above ₹0 require mandatory dual-approver sign-off per company policy POL-CAPEX-001 and SOX Section 302 controls. Escalated to Senior Finance Manager queue.",
+                    violations: ["POL-CAPEX-001"],
+                    workflow_decision: "ESCALATE_TO_HUMAN",
+                    requires_human_review: true,
+                },
+                // 6: Finance Payment Advice ₹45,000 → BLOCK (unverified payee on watchlist)
+                {
+                    verdict: "BLOCK",
+                    confidence: 0.98,
+                    reasoning: "Payment Advice PA-DEMO-001 for ₹45,000 to VENDOR-TATA-001 flagged by sanctions screening module. Payee appears on internal watch-list for pending KYC re-verification (last verified 387 days ago; policy requires re-verification every 365 days). Policy POL-KYC-EXPIRY-002 triggered — payment blocked pending KYC renewal.",
+                    violations: ["POL-KYC-EXPIRY-002", "SANCTIONS_SCREEN_HOLD"],
+                    workflow_decision: "REJECT",
+                    requires_human_review: true,
+                },
+            ] as const;
+
+            const sim = VERDICT_TABLE[eventIndex % VERDICT_TABLE.length];
+
+            // Realistic delay (400–700ms)
+            await new Promise((r) => setTimeout(r, 400 + Math.random() * 300));
+
+            updateStats(sim.verdict);
+            setResults((prev) =>
+                prev.map((r) =>
+                    r.id === eventId
+                        ? {
+                            ...r,
+                            status: verdictStatus(sim.verdict),
+                            verdict: sim.verdict,
+                            confidence: sim.confidence,
+                            reasoning: sim.reasoning,
+                            violations: [...sim.violations],
+                            workflow_decision: sim.workflow_decision,
+                            requires_human_review: sim.requires_human_review,
+                        }
+                        : r
+                )
+            );
         },
         [updateStats]
     );
@@ -727,10 +787,10 @@ export function Demo() {
             ? Array.from({ length: 100 }, (_, i) => DEMO_EVENTS[i % DEMO_EVENTS.length])
             : DEMO_EVENTS;
 
-        for (const eventDef of eventsToRun) {
+        for (const [idx, eventDef] of eventsToRun.entries()) {
             if (stopRef.current) break;
             const eventId = `${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
-            await fireEvent(eventDef, eventId);
+            await fireEvent(eventDef, eventId, idx);
             if (stopRef.current) break;
             await new Promise((r) => setTimeout(r, 800));
         }

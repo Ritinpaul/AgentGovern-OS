@@ -16,10 +16,13 @@ import uuid
 from datetime import datetime, timedelta
 from decimal import Decimal
 
+# pyre-ignore[21]
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 
+import os
+
 # Inline for script portability — doesn't need the full app
-DATABASE_URL = "postgresql+asyncpg://agentgovern:secret@localhost:5432/agentgovern"
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://agentgovern:secret@localhost:5432/agentgovern")
 
 
 async def seed():
@@ -132,9 +135,20 @@ async def seed():
             },
         ]
 
+        import uuid
+        # pyre-ignore[21]
         from sqlalchemy import text
 
         for agent_data in agents_data:
+            if "id" not in agent_data:
+                agent_data["id"] = str(uuid.uuid4())
+            if "dna_profile" not in agent_data:
+                agent_data["dna_profile"] = '{}'
+            if "social_contract" not in agent_data:
+                agent_data["social_contract"] = '{}'
+            if "platform_bindings" not in agent_data:
+                agent_data["platform_bindings"] = '[]'
+            
             cols = ", ".join(agent_data.keys())
             placeholders = ", ".join(f":{k}" for k in agent_data.keys())
             await db.execute(
@@ -152,6 +166,7 @@ async def seed():
                 "rule_definition": '{"type": "amount_limit", "max_amount": 100000}',
                 "severity": "critical",
                 "action_on_violation": "block",
+                "is_active": True,
             },
             {
                 "policy_code": "POL-TRUST-MIN-001",
@@ -161,6 +176,7 @@ async def seed():
                 "rule_definition": '{"type": "trust_minimum", "min_trust": 0.60}',
                 "severity": "high",
                 "action_on_violation": "escalate",
+                "is_active": True,
             },
             {
                 "policy_code": "POL-STATUS-001",
@@ -170,6 +186,7 @@ async def seed():
                 "rule_definition": '{"type": "status_check"}',
                 "severity": "critical",
                 "action_on_violation": "block",
+                "is_active": True,
             },
             {
                 "policy_code": "POL-T1-ONLY-001",
@@ -179,6 +196,7 @@ async def seed():
                 "rule_definition": '{"type": "tier_required", "allowed_tiers": ["T1"]}',
                 "severity": "high",
                 "action_on_violation": "escalate",
+                "is_active": True,
             },
             {
                 "policy_code": "POL-SPLIT-DETECT-001",
@@ -188,10 +206,17 @@ async def seed():
                 "rule_definition": '{"type": "split_detection", "window_minutes": 30, "max_requests": 3}',
                 "severity": "critical",
                 "action_on_violation": "block",
+                "is_active": True,
             },
         ]
 
         for policy in policies:
+            if "id" not in policy:
+                policy["id"] = str(uuid.uuid4())
+            if "applies_to_roles" not in policy:
+                policy["applies_to_roles"] = '["*"]'
+            if "applies_to_tiers" not in policy:
+                policy["applies_to_tiers"] = '["*"]'
             cols = ", ".join(policy.keys())
             placeholders = ", ".join(f":{k}" for k in policy.keys())
             await db.execute(
@@ -203,6 +228,8 @@ async def seed():
         print("✅ Demo data seeded successfully!")
         print(f"   → {len(agents_data)} agents")
         print(f"   → {len(policies)} policies")
+
+    await engine.dispose()
 
 
 if __name__ == "__main__":

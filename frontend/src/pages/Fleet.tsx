@@ -26,17 +26,23 @@ export function Fleet() {
         refetchInterval: 10000,
     });
 
-    const agents = agentsData?.agents || [];
+    const rawAgents = agentsData?.agents || [];
+    // Normalize: API returns trust_score / authority_limit as Decimal strings
+    const agents = rawAgents.map((a: any) => ({
+        ...a,
+        trust_score: Number(a.trust_score ?? 0),
+        authority_limit: Number(a.authority_limit ?? 0),
+    }));
     const activeAgents = agents.filter((agent: any) => agent.status === "active").length;
     const avgTrust = agents.length > 0
-        ? agents.reduce((sum: number, agent: any) => sum + (agent.trust_score ?? 0), 0) / agents.length
+        ? agents.reduce((sum: number, agent: any) => sum + agent.trust_score, 0) / agents.length
         : 0;
 
     const getTierColor = (tier: string) => {
-        switch (tier.toUpperCase()) {
-            case "PLATINUM": return "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
-            case "GOLD": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-            case "SILVER": return "text-slate-400 bg-slate-500/10 border-slate-500/20";
+        switch ((tier ?? "").toUpperCase()) {
+            case "T1": return "text-cyan-400 bg-cyan-500/10 border-cyan-500/20";
+            case "T2": return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+            case "T3": return "text-slate-400 bg-slate-500/10 border-slate-500/20";
             default: return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
         }
     };
@@ -130,17 +136,17 @@ export function Fleet() {
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: idx * 0.05 }}
-                                    key={agent.code}
+                                    key={agent.agent_code ?? agent.id ?? idx}
                                     className="hover:bg-white/[0.02] transition-colors group"
                                 >
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs">
-                                                {agent.code.substring(0, 2).toUpperCase()}
+                                                {(agent.agent_code ?? "??").substring(0, 2).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="text-sm font-semibold text-white">{agent.name}</div>
-                                                <div className="text-[10px] font-mono text-muted-foreground cursor-copy hover:text-emerald-400 transition-colors">{agent.code}</div>
+                                                <div className="text-sm font-semibold text-white">{agent.display_name ?? agent.agent_code}</div>
+                                                <div className="text-[10px] font-mono text-muted-foreground cursor-copy hover:text-emerald-400 transition-colors">{agent.agent_code}</div>
                                             </div>
                                         </div>
                                     </td>

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
-import LanguageIcon from "@mui/icons-material/Language";
 
 export function TopNav() {
     const [scrolled, setScrolled] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -48,11 +49,10 @@ export function TopNav() {
 
                     <div className="h-6 w-px bg-border max-sm:hidden" aria-hidden="true" />
 
-                    <button className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/10 rounded-md transition-colors relative">
-                        <LanguageIcon sx={{ fontSize: 22 }} />
-                    </button>
-
-                    <button className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/10 rounded-md transition-colors relative">
+                    <button
+                        onClick={() => navigate('/approvals')}
+                        className="p-1.5 text-muted-foreground hover:text-white hover:bg-white/10 rounded-md transition-colors relative"
+                    >
                         <span className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-destructive ring-2 ring-background"></span>
                         <NotificationsNoneIcon sx={{ fontSize: 22 }} />
                     </button>
