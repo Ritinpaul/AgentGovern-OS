@@ -1,0 +1,90 @@
+[
+    {
+        "description": "APPROVE - Standard Finance PO within limits",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "data": {
+                "NetAmount": 25000
+            }
+        }
+    },
+    {
+        "description": "ESCALATE - Finance PO exceeds ₹1,00,000 limit",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/purchaseorder",
+            "type": "sap.s4.beh.purchaseorder.v1.PurchaseOrder.Created.v1",
+            "data": {
+                "NetAmount": 850000
+            }
+        }
+    },
+    {
+        "description": "BLOCK - Unauthorized Agent (Zero-Trust)",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/unauthorized",
+            "type": "sap.s4.unauthorized.access.v1",
+            "data": {
+                "action": "dump_database"
+            }
+        }
+    },
+    {
+        "description": "APPROVE - Sales Order under discount limit",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "data": {
+                "TotalNetAmount": 12000
+            }
+        }
+    },
+    {
+        "description": "ESCALATE - Sales Order exceeds ₹50,000 limit",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/s4hana-prod/salesorder",
+            "type": "sap.s4.beh.salesorder.v1.SalesOrder.Created.v1",
+            "data": {
+                "TotalNetAmount": 95000
+            }
+        }
+    },
+    {
+        "description": "APPROVE - BTP Workflow Integration",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/btp/workflow/process-integration",
+            "type": "com.sap.btp.workflow.v1.WorkflowInstance.Started.v1",
+            "data": {
+                "workflowDefinitionId": "CapEx-Approval-v2"
+            }
+        }
+    },
+    {
+        "description": "APPROVE - HR Employee Onboarding",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/successfactors/employee",
+            "type": "sap.s4.beh.employee.v1.Employee.Onboarded.v1",
+            "data": {
+                "Department": "Engineering"
+            }
+        }
+    },
+    {
+        "description": "BLOCK - Legacy API Access (No Agent Registered)",
+        "payload": {
+            "specversion": "1.0",
+            "source": "/sap/legacy-system/api",
+            "type": "sap.legacy.api.access.v1",
+            "data": {
+                "system": "R3_LEGACY"
+            }
+        }
+    }
+]

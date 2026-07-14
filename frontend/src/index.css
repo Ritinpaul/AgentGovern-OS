@@ -1,0 +1,248 @@
+@import "tailwindcss";
+
+@theme {
+  /*
+   * PREMIUM SAAS DESIGN TOKENS
+   * EqtyLab-Inspired Deep Black + Emerald Green
+   */
+
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  /* Color Palette */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Glass/Gradients Tokens — Emerald-tinted */
+  --color-glass: rgba(16, 185, 129, 0.03);
+  --color-glass-border: rgba(16, 185, 129, 0.08);
+  --color-halo: rgba(16, 185, 129, 0.1);
+
+  /* Custom Radii */
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  /* Refined Shadow System */
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-glow: 0 0 15px -3px rgba(34, 197, 94, 0.4);
+  --shadow-glass: inset 0 1px 1px 0 rgba(16, 185, 129, 0.05), 0 4px 12px 0 rgba(0, 0, 0, 0.3);
+
+  /* Animation Overrides */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@layer base {
+  :root {
+    /* LIGHT THEME (Fallback) */
+    --background: #fcfcfc;
+    --foreground: #09090b;
+
+    --card: #ffffff;
+    --card-foreground: #09090b;
+
+    --popover: #ffffff;
+    --popover-foreground: #09090b;
+
+    --primary: #18181b;
+    --primary-foreground: #fafafa;
+
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+
+    --accent: #f4f4f5;
+    --accent-foreground: #18181b;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #fafafa;
+
+    --success: #10b981;
+    --success-foreground: #ffffff;
+
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --ring: #18181b;
+
+    --radius: 0.5rem;
+  }
+
+  /* DEFAULT: DARK THEME — EqtyLab Deep Black + Emerald */
+  .dark,
+  :root {
+    --background: #040405;
+    --foreground: #e8e8e8;
+
+    --card: #0a0b0f;
+    --card-foreground: #e8e8e8;
+
+    --popover: #0a0b0f;
+    --popover-foreground: #e8e8e8;
+
+    --primary: #22c55e;
+    --primary-foreground: #040405;
+
+    --secondary: #111318;
+    --secondary-foreground: #e8e8e8;
+
+    --muted: #111318;
+    --muted-foreground: #6b7280;
+
+    --accent: #111318;
+    --accent-foreground: #e8e8e8;
+
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+
+    --success: #10b981;
+    --success-foreground: #040405;
+
+    --border: #162016;
+    --input: #111318;
+    --ring: rgba(34, 197, 94, 0.3);
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Emerald-tinted ambient glow at top */
+    background-image:
+      radial-gradient(ellipse 60% 40% at 50% 0%, rgba(16, 185, 129, 0.06) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 30% at 80% 50%, rgba(34, 197, 94, 0.03) 0%, transparent 70%);
+  }
+
+  /* Global Selection */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: rgba(34, 197, 94, 0.25);
+    color: #fff;
+  }
+}
+
+/* Premium utilities */
+@layer utilities {
+  .glass-panel {
+    background-color: rgba(10, 11, 15, 0.8);
+    border: 1px solid rgba(16, 185, 129, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-button {
+    background-color: transparent;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    transition: all 0.2s ease;
+  }
+
+  .glass-button:hover {
+    background-color: rgba(16, 185, 129, 0.05);
+    border-color: rgba(16, 185, 129, 0.2);
+  }
+
+  .text-gradient {
+    background: linear-gradient(180deg, #ffffff 0%, rgba(34, 197, 94, 0.7) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glow-emerald {
+    box-shadow: 0 0 20px -4px rgba(34, 197, 94, 0.3),
+                0 0 40px -8px rgba(16, 185, 129, 0.15);
+  }
+
+  .glow-emerald-sm {
+    box-shadow: 0 0 10px -2px rgba(34, 197, 94, 0.2);
+  }
+
+  /* Hide scrollbar */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Flowing wave background — premium animated curves */
+@keyframes wave-flow {
+  0% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-48%) translateY(-8px); }
+  100% { transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes wave-flow-reverse {
+  0% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-52%) translateY(6px); }
+  100% { transform: translateX(-50%) translateY(0); }
+}
+
+.wave-bg::before,
+.wave-bg::after {
+  content: '';
+  position: fixed;
+  left: 50%;
+  width: 200%;
+  height: 60vh;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.wave-bg::before {
+  bottom: -20vh;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 50%, rgba(34, 197, 94, 0.05) 0%, transparent 60%);
+  border-top: 1px solid rgba(16, 185, 129, 0.06);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  animation: wave-flow 12s ease-in-out infinite;
+}
+
+.wave-bg::after {
+  bottom: -25vh;
+  background:
+    radial-gradient(ellipse at 60% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%);
+  border-top: 1px solid rgba(16, 185, 129, 0.04);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  animation: wave-flow-reverse 15s ease-in-out infinite;
+}
